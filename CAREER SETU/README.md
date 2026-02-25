@@ -112,12 +112,12 @@ Access at:
 📸 Screenshots
 ###  🏠 Home Page
 <p align="center">
-  <img src="./Screenshot 2026-02-25 132700.png" alt="Home Screenshot" width="700" />
+  <img src="./Screenshot 2026-02-25 132700.png" alt="Home Screenshot" width="700" height="150" />
 </p>
 
 ###  🏠 Home Page
 <p align="center">
-  <img src="./HomePage.png" alt="Home Screenshot" width="500" height="200" />
+  <img src="" alt="Home Screenshot" width="400" height="150" />
 </p>
 
 ###  🏠 Home Page
