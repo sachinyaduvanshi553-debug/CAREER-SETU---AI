@@ -193,10 +193,11 @@ docker-compose up --build
 
 ```bash
 cd backend
-
+```
 # Create virtual environment
+```bash
 python -m venv venv
-
+```
 # Activate virtual environment
 # On Windows:
 venv\Scripts\activate
@@ -204,11 +205,14 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # Install dependencies
+```bash
 pip install -r requirements.txt
+```
 
 # Download spaCy language model
+```bash
 python -m spacy download en_core_web_sm
-
+```
 # Set up environment variables
 cp .env.example .env
 # Edit .env with your Google Gemini API key and other configs
@@ -225,7 +229,10 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 cd ../frontend
 
 # Install dependencies
+
+```bash
 npm install
+```
 # or
 yarn install
 
@@ -234,7 +241,9 @@ cp .env.example .env.local
 # Update .env.local with backend API URL: NEXT_PUBLIC_API_URL=http://localhost:8000
 
 # Run development server
+```bash
 npm run dev
+```
 # or
 yarn dev
 ```
@@ -249,10 +258,15 @@ Create a `.env` file in the `backend/` directory:
 
 ```bash
 # .env.example
+```
+```bash
 GOOGLE_API_KEY=your_google_gemini_api_key_here
+```
 DATABASE_URL=sqlite:///./skillbridge.db
 DEBUG=True
 ENVIRONMENT=development
+```
+```bash
 CORS_ORIGINS=["http://localhost:3000", "http://localhost:8000"]
 ```
 
