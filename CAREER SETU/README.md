@@ -117,7 +117,7 @@ Access at:
 
 ###  🏠 Home Page
 <p align="center">
-  <img src="./HomePage.png" alt="Home Screenshot" width="700" />
+  <img src="./HomePage.png" alt="Home Screenshot" width="500" height="200" />
 </p>
 
 ###  🏠 Home Page
