@@ -112,7 +112,7 @@ Access at:
 📸 Screenshots
 ###  🏠 Home Page
 <p align="center">
-  <img src="./HomePage.png" alt="Home Screenshot" width="700" />
+  <img src="./CAREER-SETU---AI/CAREER SETU/Screenshot 2026-02-25 132700.png" alt="Home Screenshot" width="700" />
 </p>
 
 ###  🏠 Home Page
