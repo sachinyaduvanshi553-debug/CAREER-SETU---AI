@@ -219,7 +219,6 @@ cp .env.example .env
 
 # Run the backend server
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
 
 **Backend will be available at**: `http://localhost:8000`
 
@@ -227,15 +226,16 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ```bash
 cd ../frontend
-
+```
 # Install dependencies
 
 ```bash
 npm install
 ```
 # or
+```bash
 yarn install
-
+```
 # Create environment file
 cp .env.example .env.local
 # Update .env.local with backend API URL: NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -245,6 +245,7 @@ cp .env.example .env.local
 npm run dev
 ```
 # or
+```bash
 yarn dev
 ```
 
@@ -265,7 +266,6 @@ GOOGLE_API_KEY=your_google_gemini_api_key_here
 DATABASE_URL=sqlite:///./skillbridge.db
 DEBUG=True
 ENVIRONMENT=development
-```
 ```bash
 CORS_ORIGINS=["http://localhost:3000", "http://localhost:8000"]
 ```
@@ -420,7 +420,9 @@ We welcome contributions from developers, designers, and career mentors! Here's 
 
 ### Getting Started
 1. **Fork** the repository
+```bash
 2. **Clone** your fork: `git clone https://github.com/YOUR_USERNAME/CAREER-SETU---AI.git`
+```
 3. **Create** a feature branch: `git checkout -b feature/amazing-feature`
 4. **Make** your changes and commit: `git commit -m "Add amazing feature"`
 5. **Push** to your branch: `git push origin feature/amazing-feature`
