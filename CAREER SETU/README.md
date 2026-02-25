@@ -112,33 +112,65 @@ Access at:
 📸 Screenshots
 ###  🏠 Home Page
 <p align="center">
-  <img src="./Screenshot 2026-02-25 132700.png" alt="Home Screenshot" width="400" height="250" />
+  <img src="./Screenshot 2026-02-25 132721.png" alt="Home Screenshot" width="400" height="250" />
 </p>
 
-###  🏠 Home Page
 <p align="center">
-  <img src="" alt="Home Screenshot" width="400" height="150" />
+  <img src="./Screenshot 2026-02-25 132748.png" alt="Home Screenshot" width="400" height="250" />
 </p>
 
-###  🏠 Home Page
 <p align="center">
-  <img src="./HomePage.png" alt="Home Screenshot" width="700" />
+  <img src="./Screenshot 2026-02-25 132853.png" alt="Home Screenshot" width="400" height="250" />
 </p>
 
-###  🏠 Home Page
 <p align="center">
-  <img src="./HomePage.png" alt="Home Screenshot" width="700" />
+  <img src="./Screenshot 2026-02-25 132916.png" alt="Home Screenshot" width="400" height="250" />
 </p>
 
-###  🏠 Home Page
 <p align="center">
-  <img src="./HomePage.png" alt="Home Screenshot" width="700" />
+  <img src="./Screenshot 2026-02-25 132958.png" alt="Home Screenshot" width="400" height="250" />
 </p>
 
-###  🏠 Home Page
 <p align="center">
-  <img src="./HomePage.png" alt="Home Screenshot" width="700" />
+  <img src="./Screenshot 2026-02-25 133016.png" alt="Home Screenshot" width="400" height="250" />
 </p>
+
+<p align="center">
+  <img src="./Screenshot 2026-02-25 133049.png" alt="Home Screenshot" width="400" height="250" />
+</p>
+
+<p align="center">
+  <img src="./Screenshot 2026-02-25 133110.png" alt="Home Screenshot" width="400" height="250" />
+</p>
+
+<p align="center">
+  <img src="./Screenshot 2026-02-25 133207.png" alt="Home Screenshot" width="400" height="250" />
+</p>
+
+<p align="center">
+  <img src="./Screenshot 2026-02-25 133233.png" alt="Home Screenshot" width="400" height="250" />
+</p>
+
+<p align="center">
+  <img src="./Screenshot 2026-02-25 133248.png" alt="Home Screenshot" width="400" height="250" />
+</p>
+
+<p align="center">
+  <img src="./Screenshot 2026-02-25 133308.png" alt="Home Screenshot" width="400" height="250" />
+</p>
+
+<p align="center">
+  <img src="./Screenshot 2026-02-25 133228.png" alt="Home Screenshot" width="400" height="250" />
+</p>
+
+<p align="center">
+  <img src="./Screenshot 2026-02-25 133402.png" alt="Home Screenshot" width="400" height="250" />
+</p>
+
+<p align="center">
+  <img src="./Screenshot 2026-02-25 1323419.png" alt="Home Screenshot" width="400" height="250" />
+</p>
+
 
 ### 🐍 Manual Setup (Developer Mode)
 
