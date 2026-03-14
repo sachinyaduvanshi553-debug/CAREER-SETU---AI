@@ -8,6 +8,15 @@
 
 ---
 
+---
+
+## 🚀 Live Demo
+🔗 https://career-setu-ai-5.onrender.com/
+## 💻 GitHub Repository
+🔗 https://github.com/sachinyaduvanshi553-debug/CAREER-SETU---AI
+
+---
+
 ## 🌟 Vision
 **SkillBridge AI** is a transformative platform designed to solve the critical "Skill-to-Job" mismatch. By leveraging Industry 4.0 technologies (NLP, LLMs, and Data Analytics), we provide a localized, intelligent ecosystem for job seekers, training providers, and government agencies to synchronize their efforts and maximize national productivity.
 
