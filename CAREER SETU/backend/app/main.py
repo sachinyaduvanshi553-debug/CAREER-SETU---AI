@@ -9,6 +9,14 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# ---- Configuration ----
+PORT = int(os.getenv("PORT", 8000))
+ALLOWED_ORIGINS_STR = os.getenv("ALLOWED_ORIGINS", "*")
+ALLOWED_ORIGINS: List[str] = (
+    ["*"] if ALLOWED_ORIGINS_STR == "*"
+    else [o.strip() for o in ALLOWED_ORIGINS_STR.split(",")]
+)
+
 from .skill_extractor import SkillExtractor
 from .skill_gap_analyzer import SkillGapAnalyzer
 from .career_recommender import CareerRecommender
@@ -21,10 +29,14 @@ from .models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport
 app = FastAPI(title="SkillBridge AI API")
 
 # CORS Configuration
+# NOTE: allow_credentials=True is only valid when allow_origins is NOT ["*"].
+# When ALLOWED_ORIGINS env var lists specific URLs (e.g. your frontend), credentials work.
+# In development (wildcard), credentials are disabled to comply with the CORS spec.
+_use_credentials = ALLOWED_ORIGINS != ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=_use_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -182,4 +194,4 @@ async def get_district_analytics(state: Optional[str] = None):
     return analytics_engine.get_district_stats(state)
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=PORT, reload=False)
