@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 python-multipart
 python-jose[cryptography]
@@ -8,8 +8,10 @@ spacy
 scikit-learn
 pandas
 numpy
-google-generativeai
+google-genai
+sentence-transformers
 pytest
 httpx
 python-dotenv
-# en_core_web_sm will need to be installed separately via spacy download
+pypdf
+joblib

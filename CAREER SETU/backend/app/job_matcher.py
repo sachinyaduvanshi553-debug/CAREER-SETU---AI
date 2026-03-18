@@ -1,29 +1,37 @@
+from ml_models.job_matching import LocalJobMatcher
 from typing import List, Dict, Any
 
 class JobMatcher:
     def __init__(self, job_listings: List[Dict[str, Any]]):
         self.listings = job_listings
+        self.matcher = LocalJobMatcher()
 
     def match(self, user_skills: List[str], location: str = None) -> List[Dict[str, Any]]:
-        user_skills_set = set(s.lower() for s in user_skills)
-        matches = []
+        user_text = " ".join(user_skills)
+        job_texts = [f"{j['title']} {' '.join(j['skills'])} {j['description']}" for j in self.listings]
         
-        for job in self.listings:
-            job_skills_set = set(s.lower() for s in job["skills"])
-            # Calculate intersection
-            common = user_skills_set.intersection(job_skills_set)
-            match_score = (len(common) / len(job_skills_set)) * 100 if job_skills_set else 0
+        # Filter by location first if provided
+        filtered_indices = []
+        for i, job in enumerate(self.listings):
+            if location:
+                if location.lower() in job["location"].lower() or location.lower() in job.get("state", "").lower():
+                    filtered_indices.append(i)
+            else:
+                filtered_indices.append(i)
+        
+        if not filtered_indices:
+            return []
             
-            # Simple location filtering if provided
-            location_match = True
-            if location and location.lower() not in job["location"].lower() and location.lower() not in job.get("state", "").lower():
-                location_match = False
-                
-            if match_score > 30 and location_match: # 30% threshold for match
-                matches.append({
-                    **job,
-                    "match_score": round(match_score, 1)
-                })
-                
-        matches.sort(key=lambda x: x["match_score"], reverse=True)
-        return matches
+        # Match using local semantic model
+        match_results = self.matcher.match(user_text, [job_texts[i] for i in filtered_indices])
+        
+        results = []
+        for res in match_results:
+            original_index = filtered_indices[res["index"]]
+            job = self.listings[original_index]
+            results.append({
+                **job,
+                "match_score": round(res["score"] * 100, 1)
+            })
+            
+        return results

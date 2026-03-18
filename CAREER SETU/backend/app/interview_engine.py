@@ -1,28 +1,75 @@
+from ml_models.interview_evaluation import LocalInterviewEvaluator
 from typing import List, Dict, Any
 import random
+from .services.gemini_service import gemini_service
 
 class InterviewEngine:
     def __init__(self, api_key: str = None):
-        self.api_key = api_key
-        # For mock/demo questions
-        self.mock_questions = [
-            {"role": "Full Stack Developer", "q": "Explain the difference between REST and GraphQL APIs.", "a": "REST uses fixed endpoints, GraphQL uses single endpoint with query flexibility."},
-            {"role": "Data Scientist", "q": "What is the bias-variance tradeoff?", "a": "Bias is underfitting error, variance is overfitting error. Goal is to minimize both."},
-            {"role": "General", "q": "Tell me about a challenging project you worked on.", "a": "Use STAR method: Situation, Task, Action, Result."}
-        ]
-
-    def get_questions(self, role: str) -> List[Dict[str, str]]:
-        # Filter questions by role
-        relevant = [q for q in self.mock_questions if role in q["role"] or q["role"] == "General"]
-        random.shuffle(relevant)
-        return relevant[:5]
-
-    def evaluate_answer(self, question: str, answer: str) -> Dict[str, Any]:
-        # In a real app, use LLM to evaluate
-        score = random.randint(60, 95)
-        feedback = "Excellent answer!" if score > 85 else "Good job, but you could add more technical details." if score > 70 else "Consider covering the fundamentals of this topic more clearly."
-        
-        return {
-            "score": score,
-            "feedback": feedback
+        self.evaluator = LocalInterviewEvaluator()
+        self.templates = {
+            "Python": ["Explain Python decorators.", "What is the difference between list and tuple?", "How does memory management work in Python?"],
+            "Java": ["What is JVM and how it works?", "Explain OOP concepts in Java.", "Difference between Interface and Abstract Class."],
+            "React": ["What are React Hooks?", "Explain Virtual DOM.", "What is the difference between props and state?"],
+            "General": ["Tell me about yourself.", "What are your greatest strengths?", "Why should we hire you?"]
         }
+
+    async def get_questions(self, role: str) -> List[str]:
+        # Try to get dynamic questions from Gemini
+        prompt = f"""
+        Generate 5 high-quality interview questions for a {role} position.
+        The questions should be a mix of technical and behavioral.
+        Return ONLY a JSON list of strings.
+        Example: ["Question 1", "Question 2"]
+        """
+        
+        ai_response = await gemini_service.generate_ai_response(prompt)
+        if ai_response:
+            try:
+                questions = gemini_service.parse_json_response(ai_response)
+                if isinstance(questions, list) and len(questions) > 0:
+                    return questions
+            except Exception as e:
+                print(f"Error parsing Gemini response for questions: {e}")
+
+        # Fallback to templates
+        questions = []
+        for skill, qs in self.templates.items():
+            if skill.lower() in role.lower():
+                questions.extend(qs)
+        
+        questions.extend(self.templates["General"])
+        random.shuffle(questions)
+        return questions[:5]
+
+    async def evaluate_answer(self, question: str, answer: str) -> Dict[str, Any]:
+        # Use Gemini for high-quality evaluation
+        prompt = f"""
+        Evaluate the following interview answer.
+        
+        Question: {question}
+        User Answer: {answer}
+        
+        Provide the evaluation in JSON format with the following keys:
+        - score: (0-100)
+        - feedback: (Detailed feedback on the answer)
+        - improvements: [List of specific points to improve]
+        - ideal_answer: (A sample high-quality answer)
+        
+        ONLY return the JSON object.
+        """
+        
+        ai_response = await gemini_service.generate_ai_response(prompt)
+        if ai_response:
+            try:
+                ai_data = gemini_service.parse_json_response(ai_response)
+                return {
+                    "score": ai_data.get("score", 70),
+                    "feedback": ai_data.get("feedback", "Good attempt."),
+                    "improvements": ai_data.get("improvements", []),
+                    "ideal_answer": ai_data.get("ideal_answer", "")
+                }
+            except Exception as e:
+                print(f"Error parsing Gemini response for evaluation: {e}")
+
+        # Fallback to local evaluator
+        return self.evaluator.evaluate(answer, "This is a placeholder for ideal answer.")

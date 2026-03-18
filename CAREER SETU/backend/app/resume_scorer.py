@@ -1,66 +1,55 @@
-import google.generativeai as genai
-import os
+from ml_models.resume_scorer import LocalResumeScorer
 from typing import List, Dict, Any
+from .services.gemini_service import gemini_service
 
 class ResumeScorer:
     def __init__(self, api_key: str = None):
-        if api_key:
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
-        else:
-            self.model = None
+        self.scorer = LocalResumeScorer()
 
     async def score_resume(self, resume_text: str, target_role: str = None) -> Dict[str, Any]:
-        # If no Gemini API key, use logic-based scoring
-        if not self.model:
-            return self._logic_score(resume_text, target_role)
-            
-        prompt = f"""
-        Analyze the following resume for the target role: {target_role if target_role else 'General'}.
-        Resume Text: {resume_text}
+        # Get local analysis first as a base
+        local_analysis = self.scorer.analyze(resume_text)
         
-        Provide a JSON response with:
-        1. overall_score (0-100)
-        2. keyword_match (0-100)
-        3. section_analysis (List of {{section: string, score: number, feedback: string}})
-        4. suggestions (List of strings)
-        5. strengths (List of strings)
-        6. extracted_skills (List of strings)
-        7. missing_keywords (List of strings)
+        # Enhance with Gemini if available
+        prompt = f"""
+        Analyze this resume for the target role: {target_role if target_role else 'General'}.
+        
+        Resume Text:
+        {resume_text}
+        
+        Provide your analysis in JSON format with the following keys:
+        - overall_score: (0-100)
+        - keyword_match: (0-100)
+        - strengths: [list of strengths]
+        - missing_keywords: [list of missing keywords or skills]
+        - qualitative_feedback: [detailed suggestions for improvement]
+        
+        ONLY return the JSON object.
         """
         
-        try:
-            response = self.model.generate_content(prompt)
-            # In a real app, parse JSON from response text
-            # For this hackathon demo, we'll return a structured mock if parsing fails
-            return self._logic_score(resume_text, target_role)
-        except:
-            return self._logic_score(resume_text, target_role)
-
-    def _logic_score(self, text: str, role: str) -> Dict[str, Any]:
-        # Basic scoring logic for the demo
-        words = text.lower().split()
-        score = min(90, max(40, len(words) // 5)) # Dummy score based on length
+        ai_response = await gemini_service.generate_ai_response(prompt)
+        if ai_response:
+            try:
+                ai_data = gemini_service.parse_json_response(ai_response)
+                return {
+                    "overall_score": ai_data.get("overall_score", local_analysis["score"]),
+                    "keyword_match": ai_data.get("keyword_match", local_analysis["score"] - 5),
+                    "section_analysis": local_analysis.get("section_analysis", []),
+                    "suggestions": [ai_data.get("qualitative_feedback")] if isinstance(ai_data.get("qualitative_feedback"), str) else ai_data.get("qualitative_feedback", local_analysis["feedback"]),
+                    "strengths": ai_data.get("strengths", local_analysis.get("strengths", ["Clear structure"])),
+                    "extracted_skills": local_analysis["skills"],
+                    "missing_keywords": ai_data.get("missing_keywords", ["Review learning roadmap for suggestions"])
+                }
+            except Exception as e:
+                print(f"Error parsing Gemini response for resume: {e}")
         
+        # Fallback to local analysis
         return {
-            "overall_score": score,
-            "keyword_match": score - 5,
-            "section_analysis": [
-                {"section": "Contact Information", "score": 100, "feedback": "All details present"},
-                {"section": "Professional Summary", "score": 70, "feedback": "Could be more targeted"},
-                {"section": "Work Experience", "score": 85, "feedback": "Good use of action verbs"},
-                {"section": "Skills Section", "score": 60, "feedback": "Add more keywords"}
-            ],
-            "suggestions": [
-                "Quantify your achievements with numbers",
-                "Add more industry-specific keywords",
-                "Include a link to your portfolio or GitHub"
-            ],
-            "strengths": [
-                "Clear structure and formatting",
-                "Good use of action verbs",
-                "Relevant education section"
-            ],
-            "extracted_skills": ["React", "Python", "JavaScript", "SQL"] if "python" in text.lower() else ["Communication", "Teamwork"],
-            "missing_keywords": ["Docker", "Kubernetes", "AWS"] if "react" in text.lower() else ["Python", "Data Analysis"]
+            "overall_score": local_analysis["score"],
+            "keyword_match": local_analysis["score"] - 5,
+            "section_analysis": local_analysis.get("section_analysis", []),
+            "suggestions": local_analysis["feedback"],
+            "strengths": local_analysis.get("strengths", ["Clear structure"]),
+            "extracted_skills": local_analysis["skills"],
+            "missing_keywords": ["Review learning roadmap for suggestions"]
         }

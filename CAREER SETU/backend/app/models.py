@@ -21,11 +21,12 @@ class JobRole(BaseModel):
     description: str
 
 class ResumeAnalysis(BaseModel):
-    atsScore: int
-    keywordMatch: int
-    extractedSkills: List[str]
-    missingKeywords: List[str]
-    improvements: List[str]
+    overall_score: int
+    keyword_match: int
+    extracted_skills: List[str]
+    missing_keywords: List[str]
+    suggestions: List[str]
+    strengths: List[str]
 
 class SkillGapReport(BaseModel):
     matching_skills: List[str]

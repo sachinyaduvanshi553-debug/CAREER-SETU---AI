@@ -1,29 +1,44 @@
+from ml_models.skill_gap_analyzer import LocalSkillGapAnalyzer
 from typing import List, Dict, Any
-from .skill_extractor import SkillExtractor
+from .services.gemini_service import gemini_service
 
 class SkillGapAnalyzer:
     def __init__(self):
-        self.extractor = SkillExtractor()
+        self.analyzer = LocalSkillGapAnalyzer()
 
-    def analyze_gap(self, user_skills: List[str], target_role_skills: List[str]) -> Dict[str, Any]:
-        user_skills_set = set(s.lower() for s in user_skills)
-        target_skills_set = set(s.lower() for s in target_role_skills)
+    async def analyze_gap(self, user_skills: List[str], target_role_skills: List[str]) -> Dict[str, Any]:
+        # Get local base analysis
+        local_report = self.analyzer.analyze(user_skills, target_role_skills)
         
-        matching = []
-        missing = []
+        # Enhance with Gemini AI for semantic gap understanding
+        prompt = f"""
+        Analyze the skill gap between a user's current skills and a target role's required skills.
         
-        # Match user skills to target role requirements
-        for skill in target_role_skills:
-            if skill.lower() in user_skills_set:
-                matching.append(skill)
-            else:
-                missing.append(skill)
-                
-        readiness_score = (len(matching) / len(target_role_skills)) * 100 if target_role_skills else 0
+        User Skills: {', '.join(user_skills)}
+        Target Role Skills: {', '.join(target_role_skills)}
         
-        return {
-            "matching_skills": matching,
-            "missing_skills": missing,
-            "readiness_score": round(readiness_score, 1),
-            "status": "Ready" if readiness_score > 80 else "Improving" if readiness_score > 50 else "Gap Identified"
-        }
+        Provide your analysis in JSON format with the following keys:
+        - matching_skills: [List of skills that are a match or semantically similar]
+        - missing_skills: [List of skills that are definitely missing]
+        - readiness_score: (0-100)
+        - status: (e.g., "Ready", "Improving", "Gap Identified")
+        - recommendations: [Short advice on how to bridge the gap]
+        
+        ONLY return the JSON object.
+        """
+        
+        ai_response = await gemini_service.generate_ai_response(prompt)
+        if ai_response:
+            try:
+                ai_data = gemini_service.parse_json_response(ai_response)
+                return {
+                    "matching_skills": ai_data.get("matching_skills", local_report["matching_skills"]),
+                    "missing_skills": ai_data.get("missing_skills", local_report["missing_skills"]),
+                    "readiness_score": ai_data.get("readiness_score", local_report["readiness_score"]),
+                    "status": ai_data.get("status", local_report["status"]),
+                    "recommendations": ai_data.get("recommendations", ["Focus on the missing core skills identified in the roadmap."])
+                }
+            except Exception as e:
+                print(f"Error parsing Gemini response for skill gap: {e}")
+
+        return local_report

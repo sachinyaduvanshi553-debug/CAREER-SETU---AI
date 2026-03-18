@@ -24,7 +24,7 @@ export const api = {
 
     // Careers & Skills
     getRecommendations: (skills: string[]) => fetchWithAuth(`/career/recommend?skills=${skills.join(",")}`),
-    getSkillGap: (userId: string, roleId: string) => fetchWithAuth("/skills/gap", { method: "POST", body: JSON.stringify({ user_id: userId, role_id: roleId }) }),
+    getSkillGap: (userSkills: string[], roleId: string) => fetchWithAuth("/skills/gap", { method: "POST", body: JSON.stringify({ user_skills: userSkills, role_id: roleId }) }),
     getRoadmap: (roleId: string) => fetchWithAuth(`/roadmap/${roleId}`),
 
     // Jobs
