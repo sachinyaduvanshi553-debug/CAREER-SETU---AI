@@ -3,8 +3,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Sparkles, Mail, Lock, User, MapPin, Eye, EyeOff, ArrowRight, GraduationCap } from "lucide-react";
+import { Sparkles, Mail, Lock, User, MapPin, Eye, EyeOff, ArrowRight, GraduationCap, Phone } from "lucide-react";
 import { SKILLS_DATABASE } from "@/lib/data";
+import { auth } from "@/lib/firebase";
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
+
+declare global {
+    interface Window {
+        recaptchaVerifier: RecaptchaVerifier;
+    }
+}
 
 const INTERESTS = ["Technology", "Data Science", "Design", "Marketing", "Business", "Blue-Collar Skills", "Healthcare", "Finance"];
 
@@ -13,9 +21,11 @@ export default function RegisterPage() {
     const [show, setShow] = useState(false);
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
     const [form, setForm] = useState({
-        name: "", email: "", password: "", location: "", education: "",
-        selectedSkills: [] as string[], interests: [] as string[],
+        name: "", email: "", phone: "", password: "", location: "", education: "",
+        selectedSkills: [] as string[], interests: [] as string[], otp: ""
     });
 
     const allSkills = Object.values(SKILLS_DATABASE).flat();
@@ -38,11 +48,83 @@ export default function RegisterPage() {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (step < 3) { setStep(step + 1); return; }
+        
+        // Handle Step Transition
+        if (step < 3) { 
+            setStep(step + 1); 
+            return; 
+        }
+        
+        // At step 3: Send OTP before proceeding to Step 4
+        if (step === 3) {
+            setLoading(true);
+            setError("");
+            try {
+                // Initialize Recaptcha if it doesn't exist
+                if (!window.recaptchaVerifier) {
+                    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                        size: 'invisible'
+                    });
+                }
+                const appVerifier = window.recaptchaVerifier;
+                
+                // Format phone number
+                const phoneNumber = form.phone.startsWith('+') ? form.phone : `+91${form.phone}`;
+                
+                const confResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+                setConfirmationResult(confResult);
+                setStep(4);
+            } catch (err: any) {
+                console.error(err);
+                setError(err.message || "Failed to send OTP. Ensure number is valid with country code.");
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
+        // At step 4: Register with OTP
         setLoading(true);
-        setTimeout(() => { router.push("/dashboard"); }, 1200);
+        setError("");
+        try {
+            if (!confirmationResult) throw new Error("No confirmation result. Try again.");
+            
+            // Verify OTP via Firebase
+            const result = await confirmationResult.confirm(form.otp);
+            const user = result.user;
+            
+            // Fetch Firebase ID Token for backend verification
+            const idToken = await user.getIdToken();
+            
+            const payload = {
+                name: form.name,
+                email: form.email,
+                phone: form.phone,
+                otp: idToken, // Send idToken securely instead of string OTP
+                password: form.password,
+                location: form.location,
+                education: form.education,
+                skills: form.selectedSkills,
+                interests: form.interests
+            };
+            const res = await fetch("http://localhost:8000/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                router.push("/login");
+            } else {
+                setError(data.detail || "Registration failed");
+                setLoading(false);
+            }
+        } catch (err) {
+            setError("Server error. Please try again.");
+            setLoading(false);
+        }
     };
 
     return (
@@ -73,6 +155,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="glass-card p-8">
+                    {error && <div className="p-3 mb-4 text-sm text-red-400 bg-red-900/20 border border-red-900/50 rounded-xl">{error}</div>}
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {step === 1 && (
                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
@@ -90,6 +173,14 @@ export default function RegisterPage() {
                                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
                                         <input type="email" placeholder="you@example.com" required className="input-field !pl-11"
                                             value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-sm text-dark-300 mb-2 block">Phone Number (with country code)</label>
+                                    <div className="relative">
+                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                                        <input type="tel" placeholder="+91 9876543210" required className="input-field !pl-11"
+                                            value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
                                     </div>
                                 </div>
                                 <div>
@@ -155,6 +246,7 @@ export default function RegisterPage() {
                                 <p className="text-xs text-dark-500 mt-3">{form.selectedSkills.length} skills selected</p>
                             </motion.div>
                         )}
+                        <div id="recaptcha-container"></div>
 
                         {step === 3 && (
                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
@@ -174,6 +266,24 @@ export default function RegisterPage() {
                             </motion.div>
                         )}
 
+                        {step === 4 && (
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                                <div className="text-center mb-6">
+                                    <h3 className="text-xl font-bold text-white mb-2">Verify Phone</h3>
+                                    <p className="text-sm text-dark-400">
+                                        We&apos;ve sent a 6-digit code to <span className="text-primary-400 font-medium">{form.phone}</span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="text-sm text-dark-300 mb-2 block text-center">Verification Code</label>
+                                    <input type="text" placeholder="123456" maxLength={6} required 
+                                        className="input-field text-center tracking-[0.5em] text-xl !py-4 font-mono font-bold"
+                                        value={form.otp} onChange={e => setForm({ ...form, otp: e.target.value })} 
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
+
                         <div className="flex gap-3 pt-2">
                             {step > 1 && (
                                 <button type="button" onClick={() => setStep(step - 1)} className="btn-secondary flex-1 !py-3">Back</button>
@@ -181,7 +291,7 @@ export default function RegisterPage() {
                             <button type="submit" disabled={loading}
                                 className="btn-primary flex-1 flex items-center justify-center gap-2 !py-3.5 disabled:opacity-50"
                             >
-                                {loading ? <div className="loader !w-5 !h-5" /> : <>{step === 3 ? "Create Account" : "Continue"} <ArrowRight className="w-4 h-4" /></>}
+                                {loading ? <div className="loader !w-5 !h-5" /> : <>{step === 4 ? "Verify & Create Account" : step === 3 ? "Send OTP" : "Continue"} <ArrowRight className="w-4 h-4" /></>}
                             </button>
                         </div>
                     </form>

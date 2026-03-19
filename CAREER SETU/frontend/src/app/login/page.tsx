@@ -10,11 +10,31 @@ export default function LoginPage() {
     const [show, setShow] = useState(false);
     const [form, setForm] = useState({ email: "", password: "" });
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setTimeout(() => { router.push("/dashboard"); }, 1000);
+        setError("");
+        try {
+            const res = await fetch("http://localhost:8000/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(form)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem("token", data.access_token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                router.push("/dashboard");
+            } else {
+                setError(data.detail || "Login failed");
+                setLoading(false);
+            }
+        } catch (err) {
+            setError("Server error. Please try again.");
+            setLoading(false);
+        }
     };
 
     return (
@@ -38,6 +58,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="glass-card p-8">
+                    {error && <div className="p-3 mb-4 text-sm text-red-400 bg-red-900/20 border border-red-900/50 rounded-xl">{error}</div>}
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
                             <label className="text-sm text-dark-300 mb-2 block">Email Address</label>
