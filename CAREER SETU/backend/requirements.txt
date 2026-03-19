@@ -15,3 +15,7 @@ httpx
 python-dotenv
 pypdf
 joblib
+motor
+passlib[bcrypt]
+python-jose[cryptography]
+firebase-admin

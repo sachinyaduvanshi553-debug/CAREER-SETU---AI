@@ -4,11 +4,23 @@ from typing import List, Optional
 class UserProfile(BaseModel):
     name: str
     email: str
+    phone: str
     location: str
     education: str
     skills: List[str]
     interests: List[str]
     bio: Optional[str] = None
+
+class UserRegistration(UserProfile):
+    password: str
+    otp: str
+
+class SendOTPRequest(BaseModel):
+    phone: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
 
 class JobRole(BaseModel):
     id: str
