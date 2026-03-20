@@ -24,7 +24,11 @@ from .roadmap_generator import RoadmapGenerator
 from .resume_scorer import ResumeScorer
 from .interview_engine import InterviewEngine
 from .analytics_engine import AnalyticsEngine
-from .models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport
+from .models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport, UserRegistration, UserLogin, SendOTPRequest
+from .database import get_db
+from .auth import get_password_hash, verify_password, create_access_token
+from .services.firebase_service import verify_firebase_token
+from datetime import datetime, timedelta
 
 app = FastAPI(title="SkillBridge AI API")
 
@@ -82,13 +86,48 @@ async def health_check():
 
 # Auth & Profile
 @app.post("/api/auth/register")
-async def register(profile: UserProfile):
-    # In real app, save to DB
-    return {"message": "User registered successfully", "user": profile}
+async def register(profile: UserRegistration):
+    db = get_db()
+    
+    # 1. Verify Firebase Phone ID token sent from frontend
+    # If the firebase service account isn't configured, verify_firebase_token mocked returns the unverified phone.
+    firebase_auth = verify_firebase_token(profile.otp)
+    if not firebase_auth:
+        raise HTTPException(status_code=401, detail="Invalid Firebase Auth Token")
+        
+    verified_phone = firebase_auth.get("phone_number")
+    
+    # 2. Assert Phone Uniqueness
+    existing_user = await db["users"].find_one({"$or": [{"email": profile.email}, {"phone": profile.phone}]})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email or phone already registered")
+    
+    # 3. Securely pack and insert model
+    user_dict = profile.model_dump()
+    user_dict["password"] = get_password_hash(user_dict["password"])
+    user_dict.pop("otp", None)  # Remove Firebase token from DB payload
+    
+    result = await db["users"].insert_one(user_dict)
+    
+    user_dict.pop("password", None)
+    user_dict["_id"] = str(result.inserted_id)
+    return {"message": "User registered successfully", "user": user_dict}
 
 @app.post("/api/auth/login")
-async def login(credentials: Dict[str, str]):
-    return {"access_token": "mock_token", "token_type": "bearer"}
+async def login(credentials: UserLogin):
+    db = get_db()
+    user = await db["users"].find_one({"email": credentials.email})
+    if not user or not verify_password(credentials.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    access_token = create_access_token(data={"sub": user["email"]})
+    user.pop("password", None)
+    user["_id"] = str(user["_id"])
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user": user
+    }
 
 @app.get("/api/profile")
 async def get_profile():
