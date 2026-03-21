@@ -20,6 +20,10 @@ class UserProfile(BaseModel):
     bio: Optional[str] = None
     role: UserRole = UserRole.PROFESSIONAL
     is_verified: bool = False
+    aadhaar_verified: bool = False
+    verification_status: str = "unverified" # unverified, pending, verified
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     balance: float = 0.0
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -102,7 +106,11 @@ class ServiceRequest(BaseModel):
 class ChatMessage(BaseModel):
     sender_id: str
     receiver_id: str
-    message: str
+    message: Optional[str] = None
+    type: str = "text" # text, image, video, location
+    file_url: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     is_read: bool = False
 

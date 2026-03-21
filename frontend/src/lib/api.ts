@@ -72,4 +72,36 @@ export const api = {
     // Analytics (Existing)
     getAnalyticsOverview: () => fetchWithAuth("/analytics/overview"),
     getAnalyticsDistricts: (state?: string) => fetchWithAuth(`/analytics/districts${state ? `?state=${state}` : ""}`),
+
+    // Chat (New)
+    getChatUsers: () => fetchWithAuth("/chat/users"),
+    getConversations: () => fetchWithAuth("/chat/conversations"),
+    getChatHistory: (receiverEmail: string) => {
+        const token = localStorage.getItem("token");
+        return fetchWithAuth(`/chat/history/${receiverEmail}?token=${token}`);
+    },
+    uploadChatMedia: async (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_URL}/chat/upload`, {
+            method: "POST",
+            body: formData,
+            headers: token ? { "Authorization": `Bearer ${token}` } : {},
+        });
+        return response.json();
+    },
+
+    // Identity & Verification (New)
+    verifyIdentity: (docType: string, docNum: string) => fetchWithAuth("/identity/verify", { 
+        method: "POST", 
+        body: JSON.stringify({ document_type: docType, document_number: docNum }) 
+    }),
+    getIdentityStatus: () => fetchWithAuth("/identity/status"),
+
+    // Location Tracking
+    updateUserLocation: (lat: number, lng: number) => fetchWithAuth("/profile/update-location", {
+        method: "POST",
+        body: JSON.stringify({ latitude: lat, longitude: lng })
+    }),
 };

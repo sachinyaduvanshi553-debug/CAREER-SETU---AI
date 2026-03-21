@@ -12,7 +12,7 @@ from ml_models.interview_evaluation import LocalInterviewEvaluator
 from ml_models.roadmap_generator import LocalRoadmapGenerator
 
 def test_ml_system():
-    print("=== CAREER SETU Local ML Verification ===\n")
+    print("=== CAREER BRIDGE - AI Local ML Verification ===\n")
 
     # 1. Skill Extractor
     print("[1/6] Testing Skill Extraction...")

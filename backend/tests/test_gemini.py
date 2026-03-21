@@ -16,7 +16,7 @@ async def test_gemini():
         client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
             model="gemini-2.0-flash",
-            contents="Say 'SkillBridge AI is online!' if you can hear me."
+            contents="Say 'CAREER BRIDGE - AI is online!' if you can hear me."
         )
         print(f"✅ SUCCESS: Gemini says: {response.text}")
     except Exception as e:

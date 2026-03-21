@@ -43,14 +43,8 @@ export default function Navbar() {
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-2 group">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center group-hover:shadow-lg group-hover:shadow-primary-500/30 transition-all duration-300">
-                                <Sparkles className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="text-lg font-bold font-display">
-                                <span className="text-white">Career</span>
-                                <span className="gradient-text">Setu</span>
-                                <span className="text-dark-400 text-sm ml-1 font-normal italic tracking-tight underline decoration-primary-500/30">AI BRIDGE</span>
-                            </span>
+                            <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-xl object-contain bg-white/5 p-1 group-hover:shadow-lg group-hover:shadow-primary-500/30 transition-all duration-300" />
+                            <span className="text-xl font-bold font-display text-white">CAREER BRIDGE - AI</span>
                         </Link>
 
                         {/* Desktop Nav */}

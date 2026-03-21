@@ -15,13 +15,14 @@ class RoadmapGenerator:
         self.courses = courses
         self.generator = LocalRoadmapGenerator()
 
-    async def generate(self, missing_skills: List[str]) -> List[Dict[str, Any]]:
+    async def generate(self, missing_skills: List[str], target_role: Optional[str] = None) -> List[Dict[str, Any]]:
         if not missing_skills:
             return []
             
         # Try to get a high-quality roadmap from Gemini
         prompt = f"""
         Generate a personalized 30-60-90 day career roadmap for someone missing these skills: {', '.join(missing_skills)}.
+        Target Role: {target_role if target_role else 'General'}
         
         Provide the roadmap in JSON format as a list of 3 phases:
         - title: (e.g., "Phase 1: Foundation (Days 1-30)")
@@ -51,8 +52,8 @@ class RoadmapGenerator:
             except Exception as e:
                 logger.error(f"Error parsing Gemini response for roadmap: {e}")
 
-        # Fallback to local distribution
-        local_roadmaps = self.generator.generate(missing_skills)
+        # Fallback to local distribution with semantic data matching
+        local_roadmaps = self.generator.generate(missing_skills, target_role=target_role)
         phases: List[Dict[str, Any]] = [
             {"title": "Phase 1: Foundation (Days 1-30)", "skills": [], "goals": [], "courses": []},
             {"title": "Phase 2: Intermediate (Days 31-60)", "skills": [], "goals": [], "courses": []},

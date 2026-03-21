@@ -34,7 +34,7 @@ def run_frontend():
         pass
 
 if __name__ == "__main__":
-    print("🌟 SkillBridge AI - Starting Services 🌟")
+    print("🌟 CAREER BRIDGE - AI - Starting Services 🌟")
     
     backend_thread = threading.Thread(target=run_backend)
     frontend_thread = threading.Thread(target=run_frontend)

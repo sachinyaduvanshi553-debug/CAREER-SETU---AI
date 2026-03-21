@@ -1,16 +1,51 @@
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
+import io
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import csv
 import random
 import json
-
 import logging
+from datetime import datetime, timedelta
+from pypdf import PdfReader
 
+# Internal Imports - Using relative imports for reliability within the package
+try:
+    from .skill_extractor import SkillExtractor
+    from .skill_gap_analyzer import SkillGapAnalyzer
+    from .career_recommender import CareerRecommender
+    from .roadmap_generator import RoadmapGenerator
+    from .resume_scorer import ResumeScorer
+    from .interview_engine import InterviewEngine
+    from .analytics_engine import AnalyticsEngine
+    from .job_matcher import JobMatcher
+    from .services.job_service import JobFetcherService
+    from .models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport, JobListing, UserRegistration, UserLogin, SendOTPRequest
+    from .database import get_db
+    from .auth import get_password_hash, verify_password, create_access_token, get_current_user_email, RoleChecker
+    from .services.firebase_service import verify_firebase_token
+    from .routers import worker, customer, admin, chat, identity
+except (ImportError, ValueError):
+    # Fallback for direct execution or misconfigured PYTHONPATH
+    from app.skill_extractor import SkillExtractor
+    from app.skill_gap_analyzer import SkillGapAnalyzer
+    from app.career_recommender import CareerRecommender
+    from app.roadmap_generator import RoadmapGenerator
+    from app.resume_scorer import ResumeScorer
+    from app.interview_engine import InterviewEngine
+    from app.analytics_engine import AnalyticsEngine
+    from app.job_matcher import JobMatcher
+    from app.services.job_service import JobFetcherService
+    from app.models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport, JobListing, UserRegistration, UserLogin, SendOTPRequest
+    from app.database import get_db
+    from app.auth import get_password_hash, verify_password, create_access_token, get_current_user_email, RoleChecker
+    from app.services.firebase_service import verify_firebase_token
+    from app.routers import worker, customer, admin, chat
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -26,42 +61,18 @@ ALLOWED_ORIGINS: List[str] = (
     else [o.strip() for o in ALLOWED_ORIGINS_STR.split(",")]
 )
 
-try:
-    from .skill_extractor import SkillExtractor
-    from .skill_gap_analyzer import SkillGapAnalyzer
-    from .career_recommender import CareerRecommender
-    from .roadmap_generator import RoadmapGenerator
-    from .resume_scorer import ResumeScorer
-    from .interview_engine import InterviewEngine
-    from .analytics_engine import AnalyticsEngine
-    from .services.job_service import JobFetcherService
-    from .models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport, JobListing, UserRegistration, UserLogin, SendOTPRequest
-    from .database import get_db
-    from .auth import get_password_hash, verify_password, create_access_token, get_current_user_email, RoleChecker
-    from .services.firebase_service import verify_firebase_token
-except (ImportError, ValueError):
-    from app.skill_extractor import SkillExtractor
-    from app.skill_gap_analyzer import SkillGapAnalyzer
-    from app.career_recommender import CareerRecommender
-    from app.roadmap_generator import RoadmapGenerator
-    from app.resume_scorer import ResumeScorer
-    from app.interview_engine import InterviewEngine
-    from app.analytics_engine import AnalyticsEngine
-    from app.services.job_service import JobFetcherService
-    from app.models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport, JobListing, UserRegistration, UserLogin, SendOTPRequest
-    from app.database import get_db
-    from app.auth import get_password_hash, verify_password, create_access_token, get_current_user_email, RoleChecker
-    from app.services.firebase_service import verify_firebase_token
-from .routers import worker, customer, admin, chat
-from datetime import datetime, timedelta
+app = FastAPI(title="CAREER BRIDGE - AI API")
 
-app = FastAPI(title="SkillBridge AI API")
+# Ensure upload directories exist
+os.makedirs("uploads/chat", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Register Routers
 app.include_router(worker.router)
 app.include_router(customer.router)
 app.include_router(admin.router)
 app.include_router(chat.router)
+app.include_router(identity.router)
 
 # CORS Configuration
 # NOTE: allow_credentials=True is only valid when allow_origins is NOT ["*"].
@@ -110,34 +121,33 @@ ROLES_DB = load_roles_from_dataset()
 
 career_recommender = CareerRecommender(ROLES_DB)
 roadmap_generator = RoadmapGenerator([]) # Internal CSV used
-resume_scorer = ResumeScorer()
+resume_scorer = ResumeScorer(roles_db=ROLES_DB)
 interview_engine = InterviewEngine()
 analytics_engine = AnalyticsEngine([r.__dict__ for r in ROLES_DB])
 job_fetcher = JobFetcherService()
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to SkillBridge AI API"}
+    return {"message": "Welcome to CAREER BRIDGE - AI API"}
 
 @app.get("/health")
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "service": "SkillBridge AI API"}
+    return {"status": "healthy", "service": "CAREER BRIDGE - AI API"}
 
 # Auth & Profile
 @app.post("/api/auth/register")
 async def register(profile: UserRegistration):
     db = get_db()
     
-    # 1. Verify Firebase Phone ID token sent from frontend
-    # If the firebase service account isn't configured, verify_firebase_token mocked returns the unverified phone.
+    # 1. Verify OTP - Allow universal test code '123567'
+    is_test_otp = profile.otp == "123567"
     firebase_auth = verify_firebase_token(profile.otp)
-    if not firebase_auth:
-        raise HTTPException(status_code=401, detail="Invalid Firebase Auth Token")
-        
-    verified_phone = firebase_auth.get("phone_number")
     
-    # 2. Assert Phone Uniqueness
+    if not firebase_auth and not is_test_otp:
+        raise HTTPException(status_code=401, detail="Invalid Verification Token")
+        
+    # 2. Assert Phone & Email Uniqueness
     existing_user = await db["users"].find_one({"$or": [{"email": profile.email}, {"phone": profile.phone}]})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email or phone already registered")
@@ -145,7 +155,8 @@ async def register(profile: UserRegistration):
     # 3. Securely pack and insert model
     user_dict = profile.model_dump()
     user_dict["password"] = get_password_hash(user_dict["password"])
-    user_dict.pop("otp", None)  # Remove Firebase token from DB payload
+    user_dict.pop("otp", None)  # Remove OTP from DB payload
+    user_dict["is_verified"] = True # Mark verified as we passed the OTP check
     
     result = await db["users"].insert_one(user_dict)
     
@@ -186,11 +197,10 @@ async def get_profile(email: str = Depends(get_current_user_email)):
     return user
 
 # Core Features
-import io
-from pypdf import PdfReader
+# (Imports moved to top)
 
 @app.post("/api/resume/analyze")
-async def analyze_resume(file: UploadFile = File(...)):
+async def analyze_resume(target_role: Optional[str] = None, file: UploadFile = File(...)):
     content = await file.read()
     filename = file.filename.lower()
     
@@ -211,7 +221,7 @@ async def analyze_resume(file: UploadFile = File(...)):
         
     logger.info(f"Analyzing resume: {filename}")
     try:
-        analysis = await resume_scorer.score_resume(text)
+        analysis = await resume_scorer.score_resume(text, target_role=target_role)
         logger.info(f"Analysis completed successfully for {filename}")
         return analysis
     except Exception as e:
@@ -240,7 +250,7 @@ async def get_roadmap(role_id: str):
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
     # For demo, assuming these are missing skills
-    return await roadmap_generator.generate(role.requiredSkills)
+    return await roadmap_generator.generate(role.requiredSkills, target_role=role.title)
 
 @app.get("/api/jobs", response_model=List[JobListing])
 async def get_jobs(skills: str = "Python", location: Optional[str] = None):
@@ -255,10 +265,7 @@ async def get_jobs(skills: str = "Python", location: Optional[str] = None):
         live_jobs = await job_fetcher.fetch_live_jobs(skills, location)
         
         # 2. Match against combined set (semantic ranking)
-        try:
-            from .job_matcher import JobMatcher
-        except (ImportError, ValueError):
-            from app.job_matcher import JobMatcher
+        matcher = JobMatcher([r.__dict__ for r in ROLES_DB])
         matcher = JobMatcher([r.__dict__ for r in ROLES_DB])
         results = await matcher.match(skill_list, location, live_jobs)
         

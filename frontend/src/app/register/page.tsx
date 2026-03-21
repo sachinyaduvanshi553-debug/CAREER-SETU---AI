@@ -90,6 +90,19 @@ export default function RegisterPage() {
         setLoading(true);
         setError("");
         try {
+            // Special handling for Test OTP (123567) if confirmationResult is missing
+            if (!confirmationResult && form.otp === "123567") {
+                // Bypass Firebase verify and go straight to backend register
+                const payload = {
+                    ...form,
+                    skills: form.selectedSkills,
+                    otp: "123567" // Send the test string directly
+                };
+                const res = await api.register(payload);
+                router.push("/login");
+                return;
+            }
+
             if (!confirmationResult) throw new Error("No confirmation result. Try again.");
             
             // Verify OTP via Firebase
@@ -100,16 +113,9 @@ export default function RegisterPage() {
             const idToken = await user.getIdToken();
             
             const payload = {
-                name: form.name,
-                email: form.email,
-                phone: form.phone,
-                otp: idToken, // Send idToken securely instead of string OTP
-                password: form.password,
-                location: form.location,
-                education: form.education,
+                ...form,
                 skills: form.selectedSkills,
-                interests: form.interests,
-                role: form.role
+                otp: idToken // Send idToken securely
             };
             const res = await api.register(payload);
             router.push("/login");
@@ -130,10 +136,8 @@ export default function RegisterPage() {
             >
                 <div className="text-center mb-8">
                     <Link href="/" className="inline-flex items-center gap-2 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center">
-                            <Sparkles className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-xl font-bold font-display text-white">Career Setu AI Bridge</span>
+                        <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-xl object-contain bg-white/5 p-1" />
+                        <span className="text-xl font-bold font-display text-white">CAREER BRIDGE - AI</span>
                     </Link>
                     <h1 className="text-2xl font-bold font-display text-white">Create Account</h1>
                     <p className="text-dark-400 text-sm mt-2">Step {step} of 3 — {step === 1 ? "Basic Info" : step === 2 ? "Your Skills" : "Your Interests"}</p>
@@ -254,19 +258,31 @@ export default function RegisterPage() {
                         <div id="recaptcha-container"></div>
 
                         {step === 3 && (
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                                <p className="text-sm text-dark-400 mb-4">What areas interest you?</p>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {INTERESTS.map(interest => (
-                                        <button key={interest} type="button" onClick={() => toggleInterest(interest)}
-                                            className={`p-4 rounded-xl text-sm font-medium text-left transition-all duration-200 ${form.interests.includes(interest)
-                                                    ? "bg-primary-500/15 text-primary-300 border border-primary-500/30"
-                                                    : "bg-dark-800/80 text-dark-400 border border-white/5 hover:border-white/20"
-                                                }`}
-                                        >
-                                            {interest}
-                                        </button>
-                                    ))}
+                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                                <div>
+                                    <p className="text-sm text-dark-400 mb-4">What areas interest you?</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {INTERESTS.map(interest => (
+                                            <button key={interest} type="button" onClick={() => toggleInterest(interest)}
+                                                className={`p-4 rounded-xl text-sm font-medium text-left transition-all duration-200 ${form.interests.includes(interest)
+                                                        ? "bg-primary-500/15 text-primary-300 border border-primary-500/30"
+                                                        : "bg-dark-800/80 text-dark-400 border border-white/5 hover:border-white/20"
+                                                    }`}
+                                            >
+                                                {interest}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div className="pt-6 border-t border-white/5">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setStep(4)}
+                                        className="w-full py-3 rounded-xl bg-white/5 text-dark-400 hover:bg-white/10 hover:text-white transition-all text-xs font-bold uppercase tracking-wider border border-white/5"
+                                    >
+                                        Skip to Verification (Local Test)
+                                    </button>
                                 </div>
                             </motion.div>
                         )}
@@ -285,6 +301,7 @@ export default function RegisterPage() {
                                         className="input-field text-center tracking-[0.5em] text-xl !py-4 font-mono font-bold"
                                         value={form.otp} onChange={e => setForm({ ...form, otp: e.target.value })} 
                                     />
+                                    <p className="text-xs text-dark-500 mt-2 text-center">Use <span className="text-primary-400 font-bold">123567</span> for testing if OTP not received</p>
                                 </div>
                             </motion.div>
                         )}

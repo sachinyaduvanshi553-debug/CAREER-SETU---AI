@@ -1,5 +1,5 @@
 @echo off
-echo --- SkillBridge AI Environment Repair ---
+echo --- CAREER BRIDGE - AI Environment Repair ---
 
 cd backend
 

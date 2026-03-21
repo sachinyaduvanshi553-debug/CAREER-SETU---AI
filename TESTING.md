@@ -1,6 +1,6 @@
-# SkillBridge AI – Testing Guide 🧪
+# CAREER BRIDGE - AI – Testing Guide 🧪
 
-Follow these steps to verify the full-stack functionality of the SkillBridge AI platform.
+Follow these steps to verify the full-stack functionality of the CAREER BRIDGE - AI platform.
 
 ## 1. Environment Check
 First, ensure both servers are active:

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Sparkles, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { api } from "@/lib/api";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -17,22 +18,14 @@ export default function LoginPage() {
         setLoading(true);
         setError("");
         try {
-            const res = await fetch("http://localhost:8000/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form)
-            });
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem("token", data.access_token);
-                localStorage.setItem("user", JSON.stringify(data.user));
-                router.push("/dashboard");
-            } else {
-                setError(data.detail || "Login failed");
-                setLoading(false);
-            }
-        } catch (err) {
-            setError("Server error. Please try again.");
+            const data = await api.login(form);
+            localStorage.setItem("token", data.access_token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            
+            // Redirect based on role or to general dashboard
+            router.push("/dashboard");
+        } catch (err: any) {
+            setError(err.message || "Login failed. Please check your credentials.");
             setLoading(false);
         }
     };
@@ -48,10 +41,8 @@ export default function LoginPage() {
             >
                 <div className="text-center mb-8">
                     <Link href="/" className="inline-flex items-center gap-2 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center">
-                            <Sparkles className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-xl font-bold font-display text-white">SkillBridge AI</span>
+                        <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-xl object-contain bg-white/5 p-1" />
+                        <span className="text-xl font-bold font-display text-white">CAREER BRIDGE - AI</span>
                     </Link>
                     <h1 className="text-2xl font-bold font-display text-white">Welcome Back</h1>
                     <p className="text-dark-400 text-sm mt-2">Sign in to continue your career journey</p>

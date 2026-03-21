@@ -1,7 +1,7 @@
 @echo off
 echo Setting up Git and pushing to GitHub...
 
-cd /d "c:\Users\sachi\CAREER SETU"
+cd /d "c:\Users\sachi\OneDrive\Desktop\career-setu\CAREER-SETU---AI\CAREER SETU"
 
 echo Initializing git (if needed)...
 git init

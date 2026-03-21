@@ -49,9 +49,24 @@ class LocalSkillGapAnalyzer:
         avg_similarity = sum(scores) / len(scores) if scores else 0
         readiness_score = max(0.0, min(100.0, avg_similarity * 100))
         
+        # Professional status mapping
+        if readiness_score > 85:
+            status = "Ready for Placement"
+            advice = "Your profile is a strong match. We recommend applying for senior positions."
+        elif readiness_score > 65:
+            status = "Strong Candidate"
+            advice = "You have the core skills. Focus on the remaining gaps to reach peak readiness."
+        elif readiness_score > 40:
+            status = "Improving"
+            advice = "Good progress. Follow the roadmap to bridge the identified technical gaps."
+        else:
+            status = "Gap Identified"
+            advice = "Significant gaps identified. Start with the foundation courses in your roadmap."
+
         return {
             "matching_skills": matching,
             "missing_skills": missing,
             "readiness_score": float(f"{readiness_score:.1f}"),
-            "status": "Ready" if readiness_score > 80 else "Improving" if readiness_score > 50 else "Gap Identified"
+            "status": status,
+            "recommendations": [advice]
         }

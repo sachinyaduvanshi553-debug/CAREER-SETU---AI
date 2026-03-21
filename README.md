@@ -1,4 +1,4 @@
-# SkillBridge AI (Career Setu) 🚀
+# CAREER BRIDGE - AI 🚀
 ### *Empowering the Future Workforce with AI-Driven Career Intelligence*
 
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
@@ -9,7 +9,7 @@
 ---
 
 ## 🌟 Vision
-**SkillBridge AI** is a transformative platform designed to solve the critical "Skill-to-Job" mismatch. By leveraging Industry 4.0 technologies (NLP, LLMs, and Data Analytics), we provide a localized, intelligent ecosystem for job seekers, training providers, and government agencies to synchronize their efforts and maximize national productivity.
+**CAREER BRIDGE - AI** is a transformative platform designed to solve the critical "Skill-to-Job" mismatch. By leveraging Industry 4.0 technologies (NLP, LLMs, and Data Analytics), we provide a localized, intelligent ecosystem for job seekers, training providers, and government agencies to synchronize their efforts and maximize national productivity.
 
 ---
 
@@ -17,7 +17,7 @@
 
 > [!IMPORTANT]
 > **What makes us different?**
-> Unlike standard job portals, SkillBridge AI uses **spaCy-driven NLP** to parse unstructured regional resumes and **Google Gemini LLM** to generate personalized, empathetic mock interview evaluations and career roadmaps that feel human-centric.
+> Unlike standard job portals, CAREER BRIDGE - AI uses **spaCy-driven NLP** to parse unstructured regional resumes and **Google Gemini LLM** to generate personalized, empathetic mock interview evaluations and career roadmaps that feel human-centric.
 
 ---
 
@@ -122,4 +122,4 @@ npm run dev
 ---
 
 Developed with 💎 for Excellence.
-**Team SkillBridge AI**
+**Team CAREER BRIDGE - AI**

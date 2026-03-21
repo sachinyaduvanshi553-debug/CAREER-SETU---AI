@@ -1,12 +1,12 @@
-# SkillBridge AI (Career Setu): Working Flow & Architecture
+# CAREER BRIDGE - AI: Working Flow & Architecture
 
-This document provides a deep dive into the technical architecture, core working principles, and feature workflows of the SkillBridge AI platform.
+This document provides a deep dive into the technical architecture, core working principles, and feature workflows of the CAREER BRIDGE - AI platform.
 
 ---
 
 ## 🏗️ 1. High-Level Architecture
 
-SkillBridge AI follows a modern **Decoupled Full-Stack Architecture**, ensuring scalability and clear separation of concerns.
+CAREER BRIDGE - AI follows a modern **Decoupled Full-Stack Architecture**, ensuring scalability and clear separation of concerns.
 
 ### **Frontend: Next.js 14 (App Router)**
 - **Role**: Client interface, user state management, and visual rendering.
@@ -78,4 +78,4 @@ The platform uses a two-tier AI approach to balance speed and intelligence:
 | **Deployment**| Docker | Containerized Environment Sync |
 
 ---
-*Created for the SkillBridge AI technical documentation.*
+*Created for the CAREER BRIDGE - AI technical documentation.*

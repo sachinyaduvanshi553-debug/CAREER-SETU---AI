@@ -28,7 +28,7 @@ def test_gap_analysis():
         print(f"Gap Analysis Failed: {e}")
 
 if __name__ == "__main__":
-    print("Testing SkillBridge AI backend...")
+    print("Testing CAREER BRIDGE - AI backend...")
     test_health()
     test_recommendations()
     test_gap_analysis()

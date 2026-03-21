@@ -57,24 +57,28 @@ class LocalRoadmapGenerator:
                     from sentence_transformers import util
                     import torch
                     
-                    # We want to match the skill primarily
-                    unique_skills = list(set(r["skill"] for r in self.roadmaps))
-                    skill_embeddings = model.encode(unique_skills, convert_to_tensor=True)
+                    # We want to match the skill primarily against the database
+                    unique_roadmaps = self.roadmaps
+                    roadmap_skills = [r["skill"] for r in unique_roadmaps]
+                    
+                    roadmap_embeddings = model.encode(roadmap_skills, convert_to_tensor=True)
                     target_embedding = model.encode(skill, convert_to_tensor=True)
                     
-                    # Semantic search for the skill
-                    hits = util.semantic_search(target_embedding, skill_embeddings, top_k=3)[0]
-                    best_match_skills = [unique_skills[hit['corpus_id']] for hit in hits]
+                    # Semantic search for the most relevant roadmap
+                    hits = util.semantic_search(target_embedding, roadmap_embeddings, top_k=5)[0]
                     
-                    # Filter roadmaps for these skills
-                    relevant_roadmaps = [r for r in self.roadmaps if r["skill"] in best_match_skills]
+                    # Find the best match that also considers the target role if provided
+                    if target_role is not None:
+                        tr_lower = str(target_role).lower()
+                        for hit in hits:
+                            candidate = unique_roadmaps[hit['corpus_id']]
+                            if tr_lower in candidate["role"].lower():
+                                match = candidate
+                                break
                     
-                    if target_role and isinstance(target_role, str):
-                        tr_lower = target_role.lower()
-                        match = next((r for r in relevant_roadmaps if tr_lower in r["role"].lower()), None)
-                    
-                    if not match and relevant_roadmaps:
-                        match = random.choice(relevant_roadmaps)
+                    # Fallback to the top semantic hit if no role match
+                    if not match and hits:
+                        match = unique_roadmaps[hits[0]['corpus_id']]
                         
                 except Exception as e:
                     print(f"Semantic roadmap match failed: {e}")
@@ -86,12 +90,14 @@ class LocalRoadmapGenerator:
             if match:
                 results.append({
                     "skill": skill,
-                    "steps": match["steps"]
+                    "steps": match["steps"],
+                    "source": "Global Dataset"
                 })
             else:
                 results.append({
                     "skill": skill,
-                    "steps": [s.replace("{skill}", skill) for s in default_steps]
+                    "steps": [s.replace("{skill}", skill) for s in default_steps],
+                    "source": "AI Generated"
                 })
                 
         return results

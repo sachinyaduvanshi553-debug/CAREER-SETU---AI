@@ -144,7 +144,7 @@ export default function LandingPage() {
                         viewport={{ once: true }} className="text-center mb-16"
                     >
                         <h2 className="section-heading text-white">
-                            How <span className="gradient-text-cyan">SkillBridge AI</span> Works
+                            How <span className="gradient-text-cyan">CAREER BRIDGE - AI</span> Works
                         </h2>
                         <p className="section-subheading mx-auto">
                             From profile creation to job placement in 4 simple steps
@@ -287,10 +287,8 @@ export default function LandingPage() {
                     <div className="grid md:grid-cols-4 gap-8">
                         <div>
                             <div className="flex items-center gap-2 mb-4">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center">
-                                    <Sparkles className="w-4 h-4 text-white" />
-                                </div>
-                                <span className="font-bold font-display text-white">SkillBridge AI</span>
+                                <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-lg object-contain bg-white/5 p-0.5" />
+                                <span className="font-bold font-display text-white">CAREER BRIDGE - AI</span>
                             </div>
                             <p className="text-sm text-dark-400">AI-powered career guidance for every Indian citizen. Skill India aligned.</p>
                         </div>
@@ -321,7 +319,7 @@ export default function LandingPage() {
                         </div>
                     </div>
                     <div className="border-t border-white/5 mt-8 pt-8 text-center text-sm text-dark-500">
-                        © 2026 SkillBridge AI. Built for India, by India. 🇮🇳
+                        © 2026 CAREER BRIDGE - AI. Built for India, by India. 🇮🇳
                     </div>
                 </div>
             </footer>

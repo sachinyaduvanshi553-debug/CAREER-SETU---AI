@@ -57,8 +57,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <aside className="w-64 bg-slate-900/50 border-r border-white/5 flex flex-col hidden md:flex">
                 <div className="p-6">
                     <Link href="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center font-bold text-white">C</div>
-                        <span className="text-xl font-bold font-display text-white italic">Career Setu <span className="text-dark-400 text-xs not-italic font-normal">AI BRIDGE</span></span>
+                        <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-xl object-contain bg-white/5 p-1" />
+                        <span className="text-xl font-bold font-display text-white italic">CAREER BRIDGE - AI</span>
                     </Link>
                 </div>
 

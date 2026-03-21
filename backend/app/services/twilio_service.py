@@ -24,7 +24,7 @@ def send_otp_sms(phone_number: str, otp: str) -> bool:
         return True # Default to mock success if not configured
     try:
         message = client.messages.create(
-            body=f"Your SkillBridge AI verification code is: {otp}. It is valid for 10 minutes.",
+            body=f"Your CAREER BRIDGE - AI verification code is: {otp}. It is valid for 10 minutes.",
             from_=TWILIO_PHONE_NUMBER,
             to=phone_number
         )
