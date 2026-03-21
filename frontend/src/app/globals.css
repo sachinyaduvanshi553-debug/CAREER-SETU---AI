@@ -24,10 +24,7 @@ html {
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: #020617;
-  color: #e2e8f0;
-  min-height: 100vh;
-  overflow-x: hidden;
+  @apply bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50 min-h-screen overflow-x-hidden antialiased;
 }
 
 /* Custom Scrollbar */
@@ -127,19 +124,19 @@ body {
   }
 
   .tag {
-    @apply px-3 py-1 rounded-full text-xs font-medium bg-primary-500/10 text-primary-300 border border-primary-500/20;
+    @apply px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700/50 transition-all hover:border-zinc-300 dark:hover:border-zinc-600;
   }
 
   .tag-success {
-    @apply px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
+    @apply tag bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50;
   }
 
   .tag-warning {
-    @apply px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20;
+    @apply tag bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/50;
   }
 
   .tag-danger {
-    @apply px-3 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20;
+    @apply tag bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/50;
   }
 }
 
