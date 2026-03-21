@@ -27,31 +27,14 @@ ALLOWED_ORIGINS: List[str] = (
 )
 
 try:
-    from .skill_extractor import SkillExtractor
-    from .skill_gap_analyzer import SkillGapAnalyzer
-    from .career_recommender import CareerRecommender
-    from .roadmap_generator import RoadmapGenerator
-    from .resume_scorer import ResumeScorer
-    from .interview_engine import InterviewEngine
-    from .analytics_engine import AnalyticsEngine
-    from .services.job_service import JobFetcherService
-    from .models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport, JobListing, UserRegistration, UserLogin, SendOTPRequest
+    print("Importing core models and database...")
+    from .models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport, JobListing, UserRegistration, UserLogin
     from .database import get_db
     from .auth import get_password_hash, verify_password, create_access_token, get_current_user_email, RoleChecker
-    from .services.firebase_service import verify_firebase_token
 except (ImportError, ValueError):
-    from app.skill_extractor import SkillExtractor
-    from app.skill_gap_analyzer import SkillGapAnalyzer
-    from app.career_recommender import CareerRecommender
-    from app.roadmap_generator import RoadmapGenerator
-    from app.resume_scorer import ResumeScorer
-    from app.interview_engine import InterviewEngine
-    from app.analytics_engine import AnalyticsEngine
-    from app.services.job_service import JobFetcherService
-    from app.models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport, JobListing, UserRegistration, UserLogin, SendOTPRequest
+    from app.models import UserProfile, JobRole, ResumeAnalysis, SkillGapReport, JobListing, UserRegistration, UserLogin
     from app.database import get_db
     from app.auth import get_password_hash, verify_password, create_access_token, get_current_user_email, RoleChecker
-    from app.services.firebase_service import verify_firebase_token
 from .routers import worker, customer, admin, chat
 from datetime import datetime, timedelta
 
@@ -75,10 +58,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize engines
-extractor = SkillExtractor()
-gap_analyzer = SkillGapAnalyzer()
 
 def load_roles_from_dataset():
     roles = []
@@ -108,12 +87,71 @@ def load_roles_from_dataset():
 # Load authentic roles from the 6500-row dataset
 ROLES_DB = load_roles_from_dataset()
 
-career_recommender = CareerRecommender(ROLES_DB)
-roadmap_generator = RoadmapGenerator([]) # Internal CSV used
-resume_scorer = ResumeScorer()
-interview_engine = InterviewEngine()
-analytics_engine = AnalyticsEngine([r.__dict__ for r in ROLES_DB])
-job_fetcher = JobFetcherService()
+# Lazy engine loaders
+_extractor = None
+_gap_analyzer = None
+_career_recommender = None
+_roadmap_generator = None
+_resume_scorer = None
+_interview_engine = None
+_analytics_engine = None
+_job_fetcher = None
+
+def get_skill_extractor():
+    global _extractor
+    if _extractor is None:
+        from .skill_extractor import SkillExtractor
+        _extractor = SkillExtractor()
+    return _extractor
+
+def get_gap_analyzer():
+    global _gap_analyzer
+    if _gap_analyzer is None:
+        from .skill_gap_analyzer import SkillGapAnalyzer
+        _gap_analyzer = SkillGapAnalyzer()
+    return _gap_analyzer
+
+def get_career_recommender():
+    global _career_recommender
+    if _career_recommender is None:
+        from .career_recommender import CareerRecommender
+        _career_recommender = CareerRecommender(ROLES_DB)
+    return _career_recommender
+
+def get_roadmap_generator():
+    global _roadmap_generator
+    if _roadmap_generator is None:
+        from .roadmap_generator import RoadmapGenerator
+        _roadmap_generator = RoadmapGenerator([])
+    return _roadmap_generator
+
+def get_resume_scorer():
+    global _resume_scorer
+    if _resume_scorer is None:
+        from .resume_scorer import ResumeScorer
+        _resume_scorer = ResumeScorer()
+    return _resume_scorer
+
+def get_interview_engine():
+    global _interview_engine
+    if _interview_engine is None:
+        from .interview_engine import InterviewEngine
+        _interview_engine = InterviewEngine()
+    return _interview_engine
+
+def get_analytics_engine():
+    global _analytics_engine
+    if _analytics_engine is None:
+        from .analytics_engine import AnalyticsEngine
+        _analytics_engine = AnalyticsEngine([r.__dict__ for r in ROLES_DB])
+    return _analytics_engine
+
+def get_job_fetcher():
+    global _job_fetcher
+    if _job_fetcher is None:
+        from .services.job_service import JobFetcherService
+        _job_fetcher = JobFetcherService()
+    return _job_fetcher
 
 @app.get("/")
 async def root():
@@ -129,23 +167,14 @@ async def health_check():
 async def register(profile: UserRegistration):
     db = get_db()
     
-    # 1. Verify Firebase Phone ID token sent from frontend
-    # If the firebase service account isn't configured, verify_firebase_token mocked returns the unverified phone.
-    firebase_auth = verify_firebase_token(profile.otp)
-    if not firebase_auth:
-        raise HTTPException(status_code=401, detail="Invalid Firebase Auth Token")
-        
-    verified_phone = firebase_auth.get("phone_number")
-    
-    # 2. Assert Phone Uniqueness
+    # 1. Assert Phone and Email Uniqueness
     existing_user = await db["users"].find_one({"$or": [{"email": profile.email}, {"phone": profile.phone}]})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email or phone already registered")
     
-    # 3. Securely pack and insert model
+    # 2. Securely pack and insert model
     user_dict = profile.model_dump()
     user_dict["password"] = get_password_hash(user_dict["password"])
-    user_dict.pop("otp", None)  # Remove Firebase token from DB payload
     
     result = await db["users"].insert_one(user_dict)
     
@@ -211,7 +240,7 @@ async def analyze_resume(file: UploadFile = File(...)):
         
     logger.info(f"Analyzing resume: {filename}")
     try:
-        analysis = await resume_scorer.score_resume(text)
+        analysis = await get_resume_scorer().score_resume(text)
         logger.info(f"Analysis completed successfully for {filename}")
         return analysis
     except Exception as e:
@@ -226,13 +255,13 @@ async def analyze_skill_gap(data: Dict[str, Any]):
     role = next((r for r in ROLES_DB if r.id == target_role_id), ROLES_DB[0] if ROLES_DB else None)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
-    report = await gap_analyzer.analyze_gap(user_skills, role.requiredSkills)
+    report = await get_gap_analyzer().analyze_gap(user_skills, role.requiredSkills)
     return report
 
 @app.get("/api/career/recommend")
 async def recommend_careers(skills: str):
     skill_list = skills.split(",")
-    return await career_recommender.recommend(skill_list)
+    return await get_career_recommender().recommend(skill_list)
 
 @app.get("/api/roadmap/{role_id}")
 async def get_roadmap(role_id: str):
@@ -240,7 +269,7 @@ async def get_roadmap(role_id: str):
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
     # For demo, assuming these are missing skills
-    return await roadmap_generator.generate(role.requiredSkills)
+    return await get_roadmap_generator().generate(role.requiredSkills)
 
 @app.get("/api/jobs", response_model=List[JobListing])
 async def get_jobs(skills: str = "Python", location: Optional[str] = None):
@@ -252,7 +281,7 @@ async def get_jobs(skills: str = "Python", location: Optional[str] = None):
         skill_list = [s.strip() for s in skills.split(",")]
         
         # 1. Fetch live jobs from Adzuna (async)
-        live_jobs = await job_fetcher.fetch_live_jobs(skills, location)
+        live_jobs = await get_job_fetcher().fetch_live_jobs(skills, location)
         
         # 2. Match against combined set (semantic ranking)
         try:
@@ -273,20 +302,20 @@ async def start_interview(data: Dict[str, str]):
     role = next((r for r in ROLES_DB if r.id == role_id), ROLES_DB[0] if ROLES_DB else None)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
-    return await interview_engine.get_questions(role.title)
+    return await get_interview_engine().get_questions(role.title)
 
 @app.post("/api/interview/evaluate")
 async def evaluate_answer(data: Dict[str, str]):
-    return await interview_engine.evaluate_answer(data.get("question", ""), data.get("answer", ""))
+    return await get_interview_engine().evaluate_answer(data.get("question", ""), data.get("answer", ""))
 
 @app.get("/api/analytics/overview")
 async def get_analytics_overview():
-    return analytics_engine.get_overview()
+    return get_analytics_engine().get_overview()
 
 @app.get("/api/analytics/districts")
 async def get_district_analytics(state: Optional[str] = None):
-    return analytics_engine.get_district_stats(state)
+    return get_analytics_engine().get_district_stats(state)
 
 if __name__ == "__main__":
-    # Production configuration: Run with host 0.0.0.0 for public access, reload=False for performance
-    uvicorn.run("app.main:app", host="0.0.0.0", port=PORT, reload=False, workers=4)
+    # Production configuration: Run with host 0.0.0.0 for public access, reload=True for development
+    uvicorn.run("app.main:app", host="0.0.0.0", port=PORT, reload=True, workers=1)

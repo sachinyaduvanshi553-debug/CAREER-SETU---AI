@@ -25,10 +25,8 @@ class UserProfile(BaseModel):
 
 class UserRegistration(UserProfile):
     password: str
-    otp: str
 
-class SendOTPRequest(BaseModel):
-    phone: str
+
 
 class UserLogin(BaseModel):
     email: str
