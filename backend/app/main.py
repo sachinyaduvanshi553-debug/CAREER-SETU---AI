@@ -45,7 +45,7 @@ except (ImportError, ValueError):
     from app.database import get_db
     from app.auth import get_password_hash, verify_password, create_access_token, get_current_user_email, RoleChecker
     from app.services.firebase_service import verify_firebase_token
-    from app.routers import worker, customer, admin, chat
+    from app.routers import worker, customer, admin, chat, identity
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
     title: "CAREER BRIDGE - AI – Intelligent Career & Upskilling Platform",
@@ -12,9 +13,11 @@ export default function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
     return (
-        <html lang="en" className="dark">
-            <body className="bg-dark-950 text-dark-200 antialiased bg-grid min-h-screen">
-                {children}
+        <html lang="en" suppressHydrationWarning>
+            <body className="bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50 antialiased min-h-screen selection:bg-blue-500/30">
+                <ThemeProvider>
+                    {children}
+                </ThemeProvider>
             </body>
         </html>
     );

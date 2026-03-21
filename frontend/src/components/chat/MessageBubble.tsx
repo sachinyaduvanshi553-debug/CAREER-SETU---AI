@@ -17,21 +17,20 @@ export default function MessageBubble({ message, isOwn }: MessageBubbleProps) {
 
     return (
         <motion.div 
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
             className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} mb-4`}
         >
-            <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl relative shadow-md ${
+            <div className={`max-w-[85%] md:max-w-[70%] px-4 py-3 rounded-2xl relative shadow-sm ${
                 isOwn 
-                ? 'bg-primary-500 text-white rounded-tr-none' 
-                : 'bg-dark-800 text-dark-100 rounded-tl-none border border-white/5'
+                ? 'bg-blue-600 text-white rounded-br-sm border border-transparent' 
+                : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-bl-sm'
             }`}>
-                {/* Media ... */}
-
                 {/* Location Rendering */}
                 {message.type === "location" && (
-                    <div className="mb-2 -mx-2 -mt-1 rounded-lg overflow-hidden bg-dark-900 border border-white/10">
-                        <div className="h-32 w-full bg-dark-800 flex items-center justify-center relative group">
+                    <div className="mb-2 -mx-2 -mt-1 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-950 border border-black/5 dark:border-white/10 shadow-sm">
+                        <div className="h-32 w-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center relative group">
                             <iframe
                                 width="100%"
                                 height="100%"
@@ -40,74 +39,77 @@ export default function MessageBubble({ message, isOwn }: MessageBubbleProps) {
                                 src={`https://www.google.com/maps?q=${message.latitude},${message.longitude}&output=embed`}
                                 allowFullScreen
                             ></iframe>
-                            <div className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-colors pointer-events-none flex items-center justify-center">
-                                <div className="p-2 bg-primary-500 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute inset-0 bg-transparent group-hover:bg-black/10 transition-colors pointer-events-none flex items-center justify-center">
+                                <div className="p-2 bg-blue-600 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:scale-105">
                                     <ExternalLink className="w-4 h-4 text-white" />
                                 </div>
                             </div>
                         </div>
-                        <div className="p-2 flex items-center justify-between gap-2">
+                        <div className="p-2.5 flex items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-900 border-t border-black/5 dark:border-white/5">
                             <div className="flex items-center gap-1.5 overflow-hidden">
-                                <MapPin className="w-3.5 h-3.5 text-primary-400 flex-shrink-0" />
-                                <span className="text-[10px] font-medium truncate italic text-dark-300">
+                                <MapPin className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+                                <span className={`text-[11px] font-semibold truncate ${isOwn ? 'text-zinc-700 dark:text-zinc-300' : 'text-zinc-500'}`}>
                                     {message.latitude.toFixed(4)}, {message.longitude.toFixed(4)}
                                 </span>
                             </div>
                             <button 
                                 onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${message.latitude},${message.longitude}`, '_blank')}
-                                className="text-[10px] font-bold text-primary-400 hover:underline flex-shrink-0"
+                                className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex-shrink-0 uppercase tracking-widest"
                             >
-                                Open Maps
+                                Open
                             </button>
                         </div>
                     </div>
                 )}
+                
                 {/* Media Rendering */}
                 {message.type === "image" && mediaUrl && (
-                    <div className="mb-2 -mx-2 -mt-1 rounded-lg overflow-hidden border border-white/10 dark:border-black/20">
+                    <div className="mb-2 -mx-2 -mt-1 rounded-xl overflow-hidden border border-black/5 dark:border-white/10 shadow-sm relative group bg-zinc-100 dark:bg-zinc-900">
                         <img 
                             src={mediaUrl} 
                             alt="Shared" 
-                            className="max-h-60 w-full object-cover hover:scale-105 transition-transform duration-500 cursor-pointer" 
+                            className="max-h-64 w-full object-cover transition-transform duration-500 cursor-pointer group-hover:scale-[1.02]" 
                             onClick={() => window.open(mediaUrl, '_blank')}
                         />
                     </div>
                 )}
 
                 {message.type === "video" && mediaUrl && (
-                    <div className="mb-2 -mx-2 -mt-1 rounded-lg overflow-hidden bg-black/20 group relative">
+                    <div className="mb-2 -mx-2 -mt-1 rounded-xl overflow-hidden bg-black group relative shadow-sm">
                         <video 
                             src={mediaUrl} 
-                            className="max-h-60 w-full" 
+                            className="max-h-64 w-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" 
                             controls
                         />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                            <Play className="w-10 h-10 text-white fill-white" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
+                                <Play className="w-5 h-5 text-white fill-white ml-1" />
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {/* Text Content */}
                 {message.message && (
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    <p className={`text-[15px] whitespace-pre-wrap leading-relaxed ${isOwn ? 'text-white' : 'text-zinc-800 dark:text-zinc-200'}`}>
                         {message.message}
                     </p>
                 )}
 
                 {/* Metadata */}
-                <div className={`flex items-center gap-1.5 mt-1.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                    <span className={`text-[10px] ${isOwn ? 'text-primary-100/70' : 'text-dark-500'}`}>
+                <div className={`flex items-center gap-1.5 mt-2 ${isOwn ? 'justify-end' : 'justify-end'}`}>
+                    <span className={`text-[10px] font-medium tracking-wide ${isOwn ? 'text-blue-100/80' : 'text-zinc-400 dark:text-zinc-500'}`}>
                         {time}
                     </span>
                     {isOwn && (
-                        <CheckCheck className="w-3 h-3 text-primary-100/70" />
+                        <CheckCheck className="w-3.5 h-3.5 text-blue-200" />
                     )}
                 </div>
             </div>
             
             {/* Sender Name (Optional) */}
             {!isOwn && (
-                <span className="text-[10px] text-dark-500 mt-1 ml-1 font-medium px-1">
+                <span className="text-[10px] text-zinc-500 mt-1.5 ml-2 font-semibold uppercase tracking-widest">
                     {message.sender_name || 'Sender'}
                 </span>
             )}
