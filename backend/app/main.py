@@ -81,6 +81,7 @@ app.include_router(assistant.router)
 # When ALLOWED_ORIGINS env var lists specific URLs (e.g. your frontend), credentials work.
 # In development (wildcard), credentials are disabled to comply with the CORS spec.
 _use_credentials = ALLOWED_ORIGINS != ["*"]
+
 @app.on_event("startup")
 async def startup_db_client():
     # Create indexes for performance and uniqueness
@@ -99,10 +100,12 @@ async def startup_db_client():
     except Exception as e:
         logger.warning(f"Failed to create/verify MongoDB indexes: {e}. Check disk space and permissions.")
 
+logger.info(f"CORS Configuration: ORIGINS={ALLOWED_ORIGINS}, CREDENTIALS={_use_credentials}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_credentials=_use_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -159,7 +162,6 @@ async def health_check():
 @app.post("/api/auth/register")
 @app.post("/auth/register")
 async def register(profile: UserRegistration):
-    # ... (existing code)
     db = get_db()
     
     # 1. Assert Phone & Email Uniqueness

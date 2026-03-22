@@ -36,6 +36,6 @@ services:
         fromService:
           name: career-setu-backend
           type: web
-          property: host
+          property: url
         # Since Next.js uses NEXT_PUBLIC_ at build time, 
         # Render will automatically pass this as a build arg if defined here.

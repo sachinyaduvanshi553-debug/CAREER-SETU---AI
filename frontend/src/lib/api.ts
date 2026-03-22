@@ -1,7 +1,30 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+const getBaseUrl = () => {
+    // 1. Prioritize BUILD TIME environment variable (set during Render deployment)
+    let baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    
+    // 2. Local fallback if NEXT_PUBLIC_API_URL is missing
+    if (!baseUrl) return "/api";
+    
+    // 3. Ensure it starts with a protocol if it's meant to be an absolute URL
+    // Many Render setups provide just the hostname without https://
+    if (baseUrl.includes(".") && !baseUrl.startsWith("http") && !baseUrl.startsWith("/")) {
+        return `https://${baseUrl}`;
+    }
+    
+    return baseUrl;
+};
+
+const API_URL = getBaseUrl();
+console.log(`[API] Initialized with Base URL: ${API_URL}`);
 
 export async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
-    const url = endpoint.startsWith("http") ? endpoint : `${API_URL}${endpoint}`;
+    // Ensure endpoint starts with / if it doesn't already
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    
+    // Construct final URL
+    const url = endpoint.startsWith("http") ? endpoint : `${API_URL}${cleanEndpoint}`.replace(/([^:]\/)\/+/g, "$1");
+    
+    console.log(`[API] calling: ${options.method || 'GET'} ${url}`);
     
     // Get token from localStorage (standard for client-side Auth)
     const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
@@ -14,8 +37,11 @@ export async function fetchWithAuth(endpoint: string, options: RequestInit = {})
             ...options.headers,
         },
     });
+    
     if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+        console.error(`[API ERROR] ${options.method || 'GET'} ${url}: `, error);
+        
         // FastAPI uses 'detail', generic may use 'message'
         const errorMessage = error.detail 
             ? (typeof error.detail === 'string' ? error.detail : JSON.stringify(error.detail))
