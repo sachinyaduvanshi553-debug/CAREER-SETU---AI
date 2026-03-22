@@ -9,14 +9,14 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+# Declare build argument FIRST (before code copy + build)
+ARG NEXT_PUBLIC_API_URL=https://career-setu-backend.onrender.com
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Copy application code
 COPY . .
 
-# Add build argument for API URL
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-
-# Build the application
+# Build the application (NEXT_PUBLIC_API_URL is now baked in)
 RUN npm run build
 
 # Production image

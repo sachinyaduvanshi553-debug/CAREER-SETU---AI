@@ -1,21 +1,27 @@
-const getBaseUrl = () => {
-    // 1. Prioritize BUILD TIME environment variable (set during Render deployment)
-    let baseUrl = process.env.NEXT_PUBLIC_API_URL;
+const getBaseUrl = (): string => {
+    // NEXT_PUBLIC_API_URL is baked in at build time by Docker/Render
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
     
-    // 2. Local fallback if NEXT_PUBLIC_API_URL is missing
-    if (!baseUrl) return "/api";
-    
-    // 3. Ensure it starts with a protocol if it's meant to be an absolute URL
-    // Many Render setups provide just the hostname without https://
-    if (baseUrl.includes(".") && !baseUrl.startsWith("http") && !baseUrl.startsWith("/")) {
-        return `https://${baseUrl}`;
+    if (!envUrl) {
+        // Local dev: no env var set → use the Next.js proxy at /api
+        return "/api";
     }
     
-    return baseUrl;
+    // Ensure it has https:// prefix (Render sometimes provides just the host)
+    if (!envUrl.startsWith("http")) {
+        return `https://${envUrl}`;
+    }
+    
+    // Strip trailing slash for clean URL joining
+    return envUrl.replace(/\/$/, "");
 };
 
 const API_URL = getBaseUrl();
-console.log(`[API] Initialized with Base URL: ${API_URL}`);
+// This log is visible in browser console to verify the correct URL is being used
+if (typeof window !== "undefined") {
+    console.log(`[Career Setu API] Base URL: ${API_URL}`);
+}
+
 
 export async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
     // Ensure endpoint starts with / if it doesn't already

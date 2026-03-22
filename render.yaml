@@ -19,7 +19,7 @@ services:
       - key: JWT_SECRET_KEY
         sync: false   # REQUIRED: random string for security
       - key: ALLOWED_ORIGINS
-        sync: false   # Optional: set to frontend URL
+        value: https://career-setu-frontend.onrender.com
       - key: ADZUNA_APP_ID
         sync: false   # Value: 59e4ea87
       - key: ADZUNA_APP_KEY
@@ -33,9 +33,4 @@ services:
     plan: free
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          name: career-setu-backend
-          type: web
-          property: url
-        # Since Next.js uses NEXT_PUBLIC_ at build time, 
-        # Render will automatically pass this as a build arg if defined here.
+        value: https://career-setu-backend.onrender.com
