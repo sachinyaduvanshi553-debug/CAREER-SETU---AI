@@ -398,6 +398,7 @@ async def analyze_resume(target_role: Optional[str] = None, file: UploadFile = F
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 @app.post("/api/skills/gap")
+@app.post("/skills/gap")
 async def analyze_skill_gap(data: Dict[str, Any]):
     user_skills = data.get("user_skills", [])
     target_role_id = data.get("role_id")
@@ -409,11 +410,13 @@ async def analyze_skill_gap(data: Dict[str, Any]):
     return report
 
 @app.get("/api/career/recommend")
+@app.get("/career/recommend")
 async def recommend_careers(skills: str):
     skill_list = skills.split(",")
     return await career_recommender.recommend(skill_list)
 
 @app.get("/api/roadmap/{role_id}")
+@app.get("/roadmap/{role_id}")
 async def get_roadmap(role_id: str):
     role = next((r for r in ROLES_DB if r.id == role_id), ROLES_DB[0] if ROLES_DB else None)
     if not role:
@@ -422,6 +425,7 @@ async def get_roadmap(role_id: str):
     return await roadmap_generator.generate(role.requiredSkills, target_role=role.title)
 
 @app.get("/api/jobs", response_model=List[JobListing])
+@app.get("/jobs", response_model=List[JobListing])
 async def get_jobs(skills: str = "Python", location: Optional[str] = None):
     """
     Fetch jobs matching the user's skills and location.
@@ -443,6 +447,7 @@ async def get_jobs(skills: str = "Python", location: Optional[str] = None):
         raise HTTPException(status_code=500, detail="Failed to fetch jobs. Please try again later.")
 
 @app.post("/api/interview/start")
+@app.post("/interview/start")
 async def start_interview(data: Dict[str, str]):
     role_id = data.get("role_id")
     role = next((r for r in ROLES_DB if r.id == role_id), ROLES_DB[0] if ROLES_DB else None)
@@ -451,14 +456,17 @@ async def start_interview(data: Dict[str, str]):
     return await interview_engine.get_questions(role.title)
 
 @app.post("/api/interview/evaluate")
+@app.post("/interview/evaluate")
 async def evaluate_answer(data: Dict[str, str]):
     return await interview_engine.evaluate_answer(data.get("question", ""), data.get("answer", ""))
 
 @app.get("/api/analytics/overview")
+@app.get("/analytics/overview")
 async def get_analytics_overview():
     return analytics_engine.get_overview()
 
 @app.get("/api/analytics/districts")
+@app.get("/analytics/districts")
 async def get_district_analytics(state: Optional[str] = None):
     return analytics_engine.get_district_stats(state)
 

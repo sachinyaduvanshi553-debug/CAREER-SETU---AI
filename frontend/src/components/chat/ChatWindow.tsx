@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { api } from "@/lib/api";
+import { api, getWsUrl } from "@/lib/api";
 import MessageBubble from "./MessageBubble";
-import { Send, Paperclip, Image as ImageIcon, Video, X, MoreVertical, Phone, Video as VideoCall, Search, Smile, MapPin, MessageSquare, ShieldCheck } from "lucide-react";
+import { Send, Paperclip, ImageIcon, Video, X, MoreVertical, Phone, VideoIcon, Search, Smile, MapPin, MessageSquare, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatWindowProps {
@@ -34,7 +34,7 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
 
         // Connect WebSocket
         const token = localStorage.getItem("token");
-        const wsUrl = `ws://localhost:8000/api/chat/ws/${token}`;
+        const wsUrl = getWsUrl(`/chat/ws/${token}`);
         ws.current = new WebSocket(wsUrl);
 
         ws.current.onmessage = (event) => {

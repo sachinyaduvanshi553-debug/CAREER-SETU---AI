@@ -32,9 +32,28 @@ const getBaseUrl = (): string => {
 };
 
 const API_URL = getBaseUrl();
-// This log is visible in browser console to verify the correct URL is being used
+// Base URL without the /api suffix (used for serving static files like uploads)
+export const BASE_BACKEND_URL = API_URL.startsWith("http") ? API_URL.replace(/\/api$/, "") : "";
+
+/**
+ * Generates a WebSocket URL based on the current environment's API URL.
+ * Converts http:// to ws:// and https:// to wss://
+ */
+export const getWsUrl = (path: string): string => {
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    if (API_URL.startsWith("http")) {
+        const wsProtocol = API_URL.startsWith("https") ? "wss" : "ws";
+        const host = API_URL.replace(/^https?:\/\//, "");
+        return `${wsProtocol}://${host}${cleanPath}`;
+    }
+    // Fallback for local development proxy (Next.js)
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    return `${protocol}://${window.location.host}/api${cleanPath}`;
+};
+
 if (typeof window !== "undefined") {
     console.log(`[Career Setu API] Base URL: ${API_URL}`);
+    console.log(`[Career Setu API] Static Assets URL: ${BASE_BACKEND_URL || "Local Proxy"}`);
 }
 
 

@@ -8,7 +8,7 @@ import {
     Loader2, Plus
 } from "lucide-react";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, BASE_BACKEND_URL } from "@/lib/api";
 import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
 import { useNotify } from "@/components/NotificationProvider";
 import { EmptyState, StatusBadge, FadeIn, Spinner } from "@/components/ui";
@@ -385,7 +385,7 @@ export default function WorkerDashboard({ user }: { user: any }) {
                                         {portfolioItems.map((url: string, i: number) => {
                                             const isVideo = /\.(mp4|webm|ogg)$/.test(url);
                                             const isDoc = /\.(pdf|doc|docx)$/.test(url);
-                                            const src = url.startsWith("http") ? url : `http://127.0.0.1:8000${url}`;
+                                            const src = url.startsWith("http") ? url : `${BASE_BACKEND_URL}${url}`;
                                             return (
                                                 <motion.div
                                                     key={i}

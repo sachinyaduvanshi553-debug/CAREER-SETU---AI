@@ -1,7 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Check, CheckCheck, FileIcon, Play, ExternalLink, MapPin } from "lucide-react";
+import { BASE_BACKEND_URL } from "@/lib/api";
 
 interface MessageBubbleProps {
     message: any;
@@ -12,8 +11,7 @@ export default function MessageBubble({ message, isOwn }: MessageBubbleProps) {
     const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     // Determine backend URL for media
-    const baseUrl = "http://localhost:8000";
-    const mediaUrl = message.file_url ? (message.file_url.startsWith('http') ? message.file_url : `${baseUrl}${message.file_url}`) : null;
+    const mediaUrl = message.file_url ? (message.file_url.startsWith('http') ? message.file_url : `${BASE_BACKEND_URL}${message.file_url}`) : null;
 
     return (
         <motion.div 

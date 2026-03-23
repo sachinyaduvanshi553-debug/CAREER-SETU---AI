@@ -8,8 +8,9 @@ import { FadeIn, Spinner, StatusBadge, Skeleton } from "@/components/ui";
 import {
     User, MapPin, GraduationCap, Mail, Save, Edit3, Sparkles, Target,
     Award, BookOpen, Briefcase, Camera, Check, Phone, Globe, Linkedin,
-    Github, Plus, X, FileText, Shield
+    Github, Plus, X, FileText, Shield, Upload
 } from "lucide-react";
+import { BASE_BACKEND_URL } from "@/lib/api";
 
 const TABS = ["overview", "professional", "social", "documents"] as const;
 type Tab = typeof TABS[number];
@@ -39,6 +40,7 @@ export default function ProfilePage() {
     const [saving, setSaving] = useState(false);
     const [editing, setEditing] = useState(false);
     const [photoUploading, setPhotoUploading] = useState(false);
+    const [docUploading, setDocUploading] = useState<string | null>(null);
     const [newSkill, setNewSkill] = useState("");
     const [newInterest, setNewInterest] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +80,7 @@ export default function ProfilePage() {
         try {
             const res = await api.uploadProfilePhoto(file);
             if (res.url) {
-                const photoUrl = res.url.startsWith("http") ? res.url : `http://127.0.0.1:8000${res.url}`;
+                const photoUrl = res.url.startsWith("http") ? res.url : `${BASE_BACKEND_URL}${res.url}`;
                 const updatedUser = { ...user, profile_photo: photoUrl };
                 setUser(updatedUser);
                 await api.updateProfile({ profile_photo: photoUrl });
@@ -89,6 +91,31 @@ export default function ProfilePage() {
         } finally {
             setPhotoUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
+    const handleDocumentUpload = async (docType: string, file: File) => {
+        setDocUploading(docType);
+        try {
+            const res = await api.uploadChatMedia(file); // Reusing media upload for docs
+            if (res.url) {
+                const docUrl = res.url.startsWith("http") ? res.url : `${BASE_BACKEND_URL}${res.url}`;
+                const fieldMap: any = {
+                    "Resume / CV": "resume_url",
+                    "Aadhaar Card": "aadhaar_url"
+                };
+                const field = fieldMap[docType];
+                if (field) {
+                    const updatedUser = { ...user, [field]: docUrl };
+                    setUser(updatedUser);
+                    await api.updateProfile({ [field]: docUrl });
+                    notify("success", `${docType} Uploaded!`, "Your document has been saved.");
+                }
+            }
+        } catch (err: any) {
+            notify("error", `${docType} Upload Failed`, err?.message);
+        } finally {
+            setDocUploading(null);
         }
     };
 
@@ -482,12 +509,19 @@ export default function ProfilePage() {
                                                 <p className="text-white font-semibold text-sm">{doc.label}</p>
                                                 <p className="text-dark-500 text-xs">{doc.desc}</p>
                                             </div>
-                                            <label className="btn-secondary !py-1.5 !px-4 text-xs cursor-pointer flex items-center gap-1.5">
-                                                <Plus className="w-3.5 h-3.5" /> Upload
-                                                <input type="file" className="hidden" accept={doc.accept} onChange={(e) => {
-                                                    const f = e.target.files?.[0];
-                                                    if (f) notify("info", "Upload feature coming soon", "Document management is being set up.");
-                                                }} />
+                                            <label className={`btn-secondary !py-1.5 !px-4 text-xs flex items-center gap-1.5 ${docUploading === doc.label ? "opacity-60 pointer-events-none" : "cursor-pointer"}`}>
+                                                {docUploading === doc.label ? <Spinner size={12} /> : <Upload className="w-3.5 h-3.5" />}
+                                                {docUploading === doc.label ? "Uploading..." : "Upload"}
+                                                <input 
+                                                    type="file" 
+                                                    className="hidden" 
+                                                    accept={doc.accept} 
+                                                    onChange={(e) => {
+                                                        const f = e.target.files?.[0];
+                                                        if (f) handleDocumentUpload(doc.label, f);
+                                                    }} 
+                                                    disabled={!!docUploading}
+                                                />
                                             </label>
                                         </div>
                                     ))}
