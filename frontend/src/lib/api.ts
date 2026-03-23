@@ -1,19 +1,29 @@
+// Hardcoded production backend URL — used as final fallback
+const PRODUCTION_BACKEND_URL = "https://career-setu-backend.onrender.com";
+
 const getBaseUrl = (): string => {
     // NEXT_PUBLIC_API_URL is baked in at build time by Docker/Render
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
     
-    if (!envUrl) {
-        // Local dev: no env var set → use the Next.js proxy at /api
-        return "/api";
+    if (envUrl && envUrl.startsWith("http")) {
+        // Fully-qualified URL provided — use it directly
+        return envUrl.replace(/\/$/, "");
     }
     
-    // Ensure it has https:// prefix (Render sometimes provides just the host)
-    if (!envUrl.startsWith("http")) {
-        return `https://${envUrl}`;
+    if (envUrl && envUrl.trim().length > 0) {
+        // Partial URL without protocol — add https://
+        const cleaned = envUrl.trim().replace(/\/$/, "");
+        return `https://${cleaned}`;
     }
     
-    // Strip trailing slash for clean URL joining
-    return envUrl.replace(/\/$/, "");
+    // No env var set at all — decide based on runtime context
+    if (typeof window !== "undefined" && window.location.hostname.includes("onrender.com")) {
+        // Running on Render in production — use hardcoded backend URL
+        return PRODUCTION_BACKEND_URL;
+    }
+    
+    // Local development — use the Next.js dev proxy
+    return "/api";
 };
 
 const API_URL = getBaseUrl();
