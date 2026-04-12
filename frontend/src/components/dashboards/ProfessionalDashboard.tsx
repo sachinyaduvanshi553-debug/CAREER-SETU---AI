@@ -13,6 +13,9 @@ import Link from "next/link";
 import { api, BASE_BACKEND_URL } from "@/lib/api";
 import { useNotify } from "@/components/NotificationProvider";
 import { FadeIn, Spinner, Skeleton, EmptyState, HoverCard } from "@/components/ui";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
+import SessionTimer from "./SessionTimer";
+import ActivityHeatmap from "./ActivityHeatmap";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -91,6 +94,9 @@ type Cert = { name: string; issuer: string; year: string; url: string };
 export default function ProfessionalDashboard({ user }: { user: any }) {
     const notify = useNotify();
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // ── Activity Tracking ───────────────────────────────────────
+    const { sessionTime, stats: activityStats, logActivity } = useActivityTracker(user?.email);
 
     // ── Dashboard data ──────────────────────────────────────────
     const [stats, setStats] = useState({ careerScore: 72, recommendations: [] as any[], skills: [] as any[] });
@@ -174,6 +180,7 @@ export default function ProfessionalDashboard({ user }: { user: any }) {
                 education_history: education,
                 certifications_list: certs,
             });
+            logActivity(5); // Award 5 intensity points for updating profile!
             notify("success", "Profile Updated!", "All your professional details have been saved.");
             setShowEditor(false);
         } catch (err: any) {
@@ -539,6 +546,16 @@ export default function ProfessionalDashboard({ user }: { user: any }) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left: Main content */}
                 <div className="lg:col-span-2 space-y-6">
+                    {/* ── Activity Tracker Widgets ── */}
+                    <div className="space-y-6 mb-8">
+                        <SessionTimer 
+                            sessionSeconds={sessionTime} 
+                            totalMinutes={activityStats.totalMinutes} 
+                            currentStreak={activityStats.currentStreak} 
+                        />
+                        <ActivityHeatmap activityDates={activityStats.activityDates} />
+                    </div>
+
                     {/* ── Marketplace CTA ── */}
                     <motion.section
                         className="gsap-card glass-card p-6 border-l-4 border-primary-500 bg-primary-500/5 relative overflow-hidden group"

@@ -30,10 +30,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         info: Info
     };
     const colors = {
-        success: "border-accent-emerald/40 bg-accent-emerald/10 text-accent-emerald",
-        error: "border-red-500/40 bg-red-500/10 text-red-400",
-        warning: "border-accent-amber/40 bg-accent-amber/10 text-accent-amber",
-        info: "border-primary-500/40 bg-primary-500/10 text-primary-400"
+        success: "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+        error: "border-destructive/40 bg-destructive/10 text-destructive",
+        warning: "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+        info: "border-primary/40 bg-primary/10 text-primary"
     };
 
     return (
@@ -54,12 +54,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                             >
                                 <Icon className="w-5 h-5 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-bold text-sm">{n.title}</p>
-                                    {n.message && <p className="text-xs opacity-80 mt-0.5 text-white/70">{n.message}</p>}
+                                    <p className="font-bold text-sm tracking-tight">{n.title}</p>
+                                    {n.message && <p className="text-xs opacity-90 mt-0.5">{n.message}</p>}
                                 </div>
                                 <button
                                     onClick={() => dismiss(n.id)}
-                                    className="text-white/40 hover:text-white transition-colors flex-shrink-0"
+                                    className="opacity-40 hover:opacity-100 transition-opacity flex-shrink-0"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>

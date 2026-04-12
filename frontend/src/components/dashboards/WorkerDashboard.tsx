@@ -189,19 +189,19 @@ export default function WorkerDashboard({ user }: { user: any }) {
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-contain transition-transform group-hover:scale-110" />
                     </Link>
                     <div>
-                        <p className="text-dark-500 text-[10px] font-mono mb-0.5 uppercase tracking-[0.2em] font-bold">Portal · Worker</p>
-                        <h1 className="text-3xl font-bold text-white font-display">
+                        <p className="text-muted-foreground/60 text-[10px] font-mono mb-0.5 uppercase tracking-[0.2em] font-bold">Portal · Worker</p>
+                        <h1 className="text-3xl font-bold text-foreground font-display">
                             Worker <span className="gradient-text">Hub</span>
                         </h1>
-                        <p className="text-dark-400 mt-0.5 text-sm">Manage services, verification, and job requests.</p>
+                        <p className="text-muted-foreground mt-0.5 text-sm">Manage services, verification, and job requests.</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowProfileEditor(true)}
-                        className="btn-secondary flex items-center gap-2 text-sm !px-5 !py-2.5 shadow-xl shadow-primary-500/5 hover:border-primary-500/30"
+                        className="btn-secondary flex items-center gap-2 text-sm !px-5 !py-2.5 shadow-xl shadow-primary/5 hover:border-primary/30"
                     >
-                        <Edit3 className="w-4 h-4 text-primary-400" /> Edit Worker Profile
+                        <Edit3 className="w-4 h-4 text-primary" /> Edit Worker Profile
                     </button>
                 </div>
             </motion.header>
@@ -215,11 +215,11 @@ export default function WorkerDashboard({ user }: { user: any }) {
                         exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                         className="glass-card p-6 border-primary-500/30 bg-primary-500/5 relative overflow-hidden"
                     >
-                        <button onClick={() => setShowProfileEditor(false)} className="absolute top-4 right-4 text-dark-400 hover:text-white transition-colors">
+                        <button onClick={() => setShowProfileEditor(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
                             <X className="w-5 h-5" />
                         </button>
-                        <h3 className="text-xl font-bold text-white mb-5 flex items-center gap-2">
-                            <User className="w-5 h-5 text-primary-400" /> Update Worker Profile
+                        <h3 className="text-xl font-bold text-foreground mb-5 flex items-center gap-2">
+                            <User className="w-5 h-5 text-primary" /> Update Worker Profile
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="md:col-span-2">
@@ -263,7 +263,7 @@ export default function WorkerDashboard({ user }: { user: any }) {
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-dark-300 mb-2 block font-semibold uppercase tracking-wider">About Your Work</label>
+                                <label className="text-xs text-muted-foreground mb-2 block font-semibold uppercase tracking-wider">About Your Work</label>
                                 <textarea
                                     value={profileForm.description}
                                     onChange={(e) => setProfileForm({ ...profileForm, description: e.target.value })}
@@ -289,18 +289,18 @@ export default function WorkerDashboard({ user }: { user: any }) {
                 <motion.section
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="gsap-reveal glass-card p-6 border-l-4 border-accent-emerald bg-white/5 space-y-6"
+                    className="gsap-reveal glass-card p-6 border-l-4 border-emerald-500 bg-muted/30 space-y-6"
                 >
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-accent-emerald" /> Identity & Documents
+                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-emerald-500" /> Identity & Documents
                     </h3>
                     
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Digital Verification */}
                         <div className="space-y-4">
                             <div>
-                                <h4 className="text-sm font-bold text-white mb-1">Digital Aadhaar Verification</h4>
-                                <p className="text-xs text-dark-400">Enter your 12-digit number for instant verification status.</p>
+                                <h4 className="text-sm font-bold text-foreground mb-1">Digital Aadhaar Verification</h4>
+                                <p className="text-xs text-muted-foreground">Enter your 12-digit number for instant verification status.</p>
                             </div>
                             <div className="flex gap-2">
                                 <input
@@ -326,11 +326,11 @@ export default function WorkerDashboard({ user }: { user: any }) {
                                 { label: "Aadhaar Card (Photo)", key: "aadhaar" as const, current: user?.aadhaar_url },
                                 { label: "Resume / CV (PDF)", key: "resume" as const, current: user?.resume_url }
                             ].map(doc => (
-                                <div key={doc.key} className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
+                                <div key={doc.key} className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
                                     <div className="flex justify-between items-start">
-                                        <p className="text-[10px] font-bold text-dark-400 uppercase tracking-wider">{doc.label}</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{doc.label}</p>
                                         {doc.current && (
-                                            <a href={doc.current.startsWith('http') ? doc.current : `${BASE_BACKEND_URL}${doc.current}`} target="_blank" className="text-[10px] text-primary-400 hover:underline">View</a>
+                                            <a href={doc.current.startsWith('http') ? doc.current : `${BASE_BACKEND_URL}${doc.current}`} target="_blank" className="text-[10px] text-primary hover:underline">View</a>
                                         )}
                                     </div>
                                     <label className={`btn-secondary w-full !py-2 text-[10px] flex items-center justify-center gap-2 ${docUploading === doc.key ? "opacity-50" : "cursor-pointer"}`}>
@@ -357,12 +357,12 @@ export default function WorkerDashboard({ user }: { user: any }) {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.97 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="gsap-reveal glass-card px-5 py-3 border-l-4 border-accent-emerald bg-accent-emerald/5 flex items-center gap-3"
+                    className="gsap-reveal glass-card px-5 py-3 border-l-4 border-emerald-500 bg-emerald-500/5 flex items-center gap-3"
                 >
-                    <CheckCircle2 className="w-5 h-5 text-accent-emerald" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                     <div>
-                        <span className="text-white font-bold text-sm">Identity Verified</span>
-                        <span className="text-dark-400 text-xs ml-2">You're eligible for premium job requests</span>
+                        <span className="text-foreground font-bold text-sm">Identity Verified</span>
+                        <span className="text-muted-foreground text-xs ml-2">You&apos;re eligible for premium job requests</span>
                     </div>
                 </motion.div>
             )}
@@ -388,9 +388,9 @@ export default function WorkerDashboard({ user }: { user: any }) {
                         {/* ── Job Requests Tab ── */}
                         {activeTab === "requests" && (
                             <motion.div key="requests" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="space-y-4">
-                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <Briefcase className="w-5 h-5 text-primary-400" /> Incoming Requests
-                                    <span className="ml-1 px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-400 text-xs font-bold">{requests.length}</span>
+                                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                                    <Briefcase className="w-5 h-5 text-primary" /> Incoming Requests
+                                    <span className="ml-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold">{requests.length}</span>
                                 </h2>
                                 {requests.length === 0 ? (
                                     <EmptyState
@@ -424,10 +424,10 @@ export default function WorkerDashboard({ user }: { user: any }) {
                                                     </div>
                                                     <div className="flex items-center gap-4">
                                                         <div className="text-right hidden sm:block">
-                                                            <div className="text-lg font-bold text-accent-emerald">₹{req.budget}</div>
-                                                            <div className="text-[10px] text-dark-500 uppercase tracking-wider">Budget</div>
+                                                            <div className="text-lg font-bold text-emerald-500">₹{req.budget}</div>
+                                                            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Budget</div>
                                                         </div>
-                                                        <Link href="/chat" className="p-2 glass-card !rounded-xl text-dark-400 hover:text-white transition-all shrink-0">
+                                                        <Link href="/chat" className="p-2 glass-card !rounded-xl text-muted-foreground hover:text-foreground transition-all shrink-0">
                                                             <MessageSquare className="w-4 h-4" />
                                                         </Link>
                                                     </div>
@@ -501,7 +501,7 @@ export default function WorkerDashboard({ user }: { user: any }) {
                         {activeTab === "portfolio" && (
                             <motion.div key="portfolio" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-xl font-bold text-white">My Portfolio</h2>
+                                    <h2 className="text-xl font-bold text-foreground">My Portfolio</h2>
                                     <label className={`btn-secondary text-xs !px-4 !py-2 cursor-pointer flex items-center gap-2 ${uploading ? "opacity-60 pointer-events-none" : ""}`}>
                                         {uploading ? <><Spinner size={14} /> Uploading...</> : <><Upload className="w-4 h-4" /> Upload Work</>}
                                         <input type="file" className="hidden" onChange={handlePortfolioUpload} accept="image/*,video/*,.pdf,.doc,.docx" disabled={uploading} />

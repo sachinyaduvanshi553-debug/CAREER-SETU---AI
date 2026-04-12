@@ -4,6 +4,7 @@ import { NotificationProvider } from "@/components/NotificationProvider";
 import { GlobalVoiceAssistant } from "@/components/GlobalVoiceAssistant";
 import { SocketProvider } from "@/components/SocketProvider";
 import PageTransition from "@/components/PageTransition";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
     title: "Career Setu AI — Intelligent Career & Upskilling Platform",
@@ -24,7 +25,7 @@ export default function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
     return (
-        <html lang="en" className="dark">
+        <html lang="en" suppressHydrationWarning>
             <head>
                 <link rel="manifest" href="/manifest.json" />
                 <meta name="mobile-web-app-capable" content="yes" />
@@ -33,8 +34,9 @@ export default function RootLayout({
                 <meta name="apple-mobile-web-app-title" content="Career Setu" />
                 <meta name="theme-color" content="#6366f1" />
             </head>
-            <body className="bg-dark-950 text-dark-200 antialiased bg-grid min-h-screen relative overflow-x-hidden">
-                <NotificationProvider>
+            <body className="bg-background text-foreground antialiased min-h-screen relative overflow-x-hidden transition-colors duration-300">
+                <ThemeProvider>
+                    <NotificationProvider>
                     <SocketProvider>
                         <PageTransition>
                             {children}
@@ -42,6 +44,7 @@ export default function RootLayout({
                         <GlobalVoiceAssistant />
                     </SocketProvider>
                 </NotificationProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

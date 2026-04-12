@@ -47,7 +47,7 @@ except (ImportError, ValueError):
     from app.database import get_db
     from app.auth import get_password_hash, verify_password, create_access_token, get_current_user_email, RoleChecker
     from app.services.firebase_service import verify_firebase_token
-    from app.routers import worker, customer, admin, chat, assistant
+    from app.routers import worker, customer, admin, chat, identity, assistant
     from app.socket_manager import socket_app
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -488,6 +488,42 @@ async def get_analytics_overview():
 @app.get("/analytics/districts")
 async def get_district_analytics(state: Optional[str] = None):
     return analytics_engine.get_district_stats(state)
+
+@app.post("/api/cover-letter/generate")
+@app.post("/cover-letter/generate")
+async def generate_cover_letter(data: Dict[str, Any], email: str = Depends(get_current_user_email)):
+    db = get_db()
+    user = await db["users"].find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    target_role = data.get("target_role", "Software Engineer")
+    job_description = data.get("job_description", "")
+    
+    try:
+        from .services.gemini_service import gemini_service
+    except:
+        from app.services.gemini_service import gemini_service
+        
+    prompt = f"""
+    Write a highly professional, modern 250-word cover letter for the role of {target_role}.
+    
+    Candidate details:
+    - Name: {user.get('name', 'Candidate')}
+    - Skills: {', '.join(user.get('skills', []))}
+    - Bio: {user.get('bio', 'An enthusiastic professional.')}
+    
+    Job Description context (if any):
+    {job_description}
+    
+    Return only the clean text of the cover letter nicely formatted. Start immediately with 'Dear Hiring Manager,' or similar. Do not explain your response.
+    """
+    
+    ai_response = await gemini_service.generate_ai_response(prompt)
+    if not ai_response:
+        ai_response = "Dear Hiring Manager, \n\nI am very interested in this role and believe my skills make me a strong candidate. [Default Fallback]"
+        
+    return {"cover_letter": ai_response}
 
 # Wrap FastAPI app with SocketIO ASGI App to properly handle websockets without Starlette mount routing errors
 import socketio

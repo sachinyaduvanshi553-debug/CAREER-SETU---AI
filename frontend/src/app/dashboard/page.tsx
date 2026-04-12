@@ -51,7 +51,7 @@ function DashboardSkeleton() {
                         <Skeleton className="h-16 w-16 rounded-full mx-auto" />
                         <Skeleton className="h-5 w-32 mx-auto" />
                         <Skeleton className="h-4 w-24 mx-auto" />
-                        <div className="space-y-2 pt-4 border-t border-white/5">
+                        <div className="space-y-2 pt-4 border-t border-border/40">
                             {[...Array(3)].map((_, i) => (
                                 <div key={i} className="flex justify-between">
                                     <Skeleton className="h-4 w-20" />
@@ -114,10 +114,10 @@ export default function DashboardPage() {
     }, [loading, user]);
 
     const roleConfig: Record<string, { label: string; color: string; bg: string }> = {
-        worker: { label: "Worker", color: "text-accent-amber", bg: "bg-accent-amber/10 border-accent-amber/30" },
-        customer: { label: "Customer", color: "text-accent-cyan", bg: "bg-accent-cyan/10 border-accent-cyan/30" },
-        professional: { label: "Professional", color: "text-primary-400", bg: "bg-primary-500/10 border-primary-500/30" },
-        admin: { label: "Admin", color: "text-red-400", bg: "bg-red-500/10 border-red-500/30" },
+        worker: { label: "Worker", color: "text-amber-500", bg: "bg-amber-500/10 border-amber-500/30" },
+        customer: { label: "Customer", color: "text-cyan-500", bg: "bg-cyan-500/10 border-cyan-500/30" },
+        professional: { label: "Professional", color: "text-primary", bg: "bg-primary/10 border-primary/30" },
+        admin: { label: "Admin", color: "text-destructive", bg: "bg-destructive/10 border-destructive/30" },
     };
 
     const roleMeta = user ? (roleConfig[user.role] || roleConfig.professional) : null;
@@ -138,11 +138,11 @@ export default function DashboardPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             className="flex flex-col items-center justify-center min-h-[60vh] text-center"
                         >
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center mb-6 glow-sm">
+                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent-purple flex items-center justify-center mb-6 glow-sm">
                                 <span className="text-4xl">🔐</span>
                             </div>
-                            <h2 className="text-3xl font-bold text-white mb-3 font-display">Session Expired</h2>
-                            <p className="text-dark-400 mb-8 max-w-sm">Please log in again to access your personalized dashboard.</p>
+                            <h2 className="text-3xl font-bold text-foreground mb-3 font-display">Session Expired</h2>
+                            <p className="text-muted-foreground mb-8 max-w-sm">Please log in again to access your personalized dashboard.</p>
                             <a href="/login" className="btn-primary !px-8 !py-4 text-base">Return to Login</a>
                         </motion.div>
                     ) : (
@@ -157,8 +157,8 @@ export default function DashboardPage() {
                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${roleMeta?.bg} ${roleMeta?.color}`}>
                                     {roleMeta?.label} Dashboard
                                 </span>
-                                <span className="text-dark-500 text-sm hidden sm:block">
-                                    Welcome back, <span className="text-white font-semibold">{user.name?.split(" ")[0]}</span> 👋
+                                <span className="text-muted-foreground text-sm hidden sm:block">
+                                    Welcome back, <span className="text-foreground font-semibold">{user.name?.split(" ")[0]}</span> 👋
                                 </span>
                             </div>
 
