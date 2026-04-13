@@ -39,7 +39,7 @@ export default function ResumeReport({ data }: ResumeReportProps) {
                             <Sparkles className="w-5 h-5 text-accent-cyan" /> AI Executive Summary
                         </h4>
                         <p className="text-dark-300 text-sm leading-relaxed italic">
-                            "{data.suggestions[0]?.substring(0, 300)}..."
+                            &quot;{data.suggestions[0]?.substring(0, 300)}...&quot;
                         </p>
                     </div>
 

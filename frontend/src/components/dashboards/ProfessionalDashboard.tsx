@@ -10,6 +10,7 @@ import {
     BarChart2, Clock, Star, CheckCircle2, Loader2, Badge
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { api, BASE_BACKEND_URL } from "@/lib/api";
 import { useNotify } from "@/components/NotificationProvider";
 import { FadeIn, Spinner, Skeleton, EmptyState, HoverCard } from "@/components/ui";
@@ -20,7 +21,7 @@ import ActivityHeatmap from "./ActivityHeatmap";
 gsap.registerPlugin(ScrollTrigger);
 
 /* ── Animated circular career score ─────────────────────────── */
-function CircularProgress({ value, size = 130, stroke = 10 }: { value: number; size?: number; stroke?: number }) {
+export function CircularProgress({ value, size = 130, stroke = 10 }: { value: number; size?: number; stroke?: number }) {
     const radius = (size - stroke) / 2;
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (value / 100) * circumference;
@@ -240,8 +241,8 @@ export default function ProfessionalDashboard({ user }: { user: any }) {
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6"
             >
                 <div className="flex items-center gap-4">
-                    <Link href="/" className="w-12 h-12 flex-shrink-0 group">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-contain transition-transform group-hover:scale-110" />
+                    <Link href="/" className="w-12 h-12 flex-shrink-0 group relative">
+                        <Image src="/logo.png" alt="Logo" width={48} height={48} className="object-contain transition-transform group-hover:scale-110" />
                     </Link>
                     <div>
                         <p className="text-dark-500 text-[10px] font-mono mb-0.5 uppercase tracking-[0.2em] font-bold">Portal · Pro</p>
@@ -806,7 +807,7 @@ export default function ProfessionalDashboard({ user }: { user: any }) {
                         <div className="text-center mb-5">
                             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-accent-purple mx-auto flex items-center justify-center text-2xl font-bold text-white shadow-xl overflow-hidden mb-3">
                                 {user?.profile_photo
-                                    ? <img src={user.profile_photo.startsWith('http') ? user.profile_photo : `${BASE_BACKEND_URL}${user.profile_photo}`} alt="avatar" className="w-full h-full object-cover" />
+                                    ? <Image src={user.profile_photo.startsWith('http') ? user.profile_photo : `${BASE_BACKEND_URL}${user.profile_photo}`} alt="avatar" width={64} height={64} className="object-cover" unoptimized />
                                     : user?.name?.[0]?.toUpperCase()
                                 }
                             </div>

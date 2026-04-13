@@ -86,7 +86,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                 socketRef.current = null;
             }
         };
-    }, []);
+    }, [notify]);
 
     const emit = useCallback((event: string, data: any) => {
         if (socketRef.current) {

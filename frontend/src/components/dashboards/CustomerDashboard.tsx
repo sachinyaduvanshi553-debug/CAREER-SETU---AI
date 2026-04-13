@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, MapPin, Star, Plus, Clock, CheckCircle2, ChevronRight, Sparkles, MessageSquare, AlertCircle, X, Loader2, User, Briefcase } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { api, BASE_BACKEND_URL } from "@/lib/api";
 import { gsap } from "gsap";
@@ -130,8 +131,8 @@ export default function CustomerDashboard({ user }: { user: any }) {
         <div className="space-y-8" ref={containerRef}>
             <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                    <Link href="/" className="w-12 h-12 flex-shrink-0 group">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-contain transition-transform group-hover:scale-110" />
+                    <Link href="/" className="w-12 h-12 flex-shrink-0 group relative">
+                        <Image src="/logo.png" alt="Logo" width={48} height={48} className="object-contain transition-transform group-hover:scale-110" />
                     </Link>
                     <div>
                         <p className="text-dark-500 text-[10px] font-mono mb-0.5 uppercase tracking-[0.2em] font-bold">Portal · Customer</p>
@@ -263,9 +264,9 @@ export default function CustomerDashboard({ user }: { user: any }) {
                                 {workers.map((w, i) => (
                                     <div key={i} className="glass-card p-4 hover:bg-white/5 transition-all group border-l-2 border-accent-emerald">
                                         <div className="flex items-center gap-4 mb-3">
-                                            <div className="w-12 h-12 rounded-full bg-slate-800 border-2 border-primary-500 flex items-center justify-center font-bold text-primary-400 text-lg overflow-hidden">
+                                            <div className="w-12 h-12 rounded-full bg-slate-800 border-2 border-primary-500 flex items-center justify-center font-bold text-primary-400 text-lg overflow-hidden relative">
                                                 {w.profile_photo 
-                                                    ? <img src={w.profile_photo.startsWith('http') ? w.profile_photo : `${BASE_BACKEND_URL}${w.profile_photo}`} className="w-full h-full object-cover" alt="worker" />
+                                                    ? <Image src={w.profile_photo.startsWith('http') ? w.profile_photo : `${BASE_BACKEND_URL}${w.profile_photo}`} fill className="object-cover" alt="worker" unoptimized />
                                                     : (w.name?.[0]?.toUpperCase() || "?")
                                                 }
                                             </div>
@@ -397,9 +398,9 @@ export default function CustomerDashboard({ user }: { user: any }) {
                 <div className="space-y-8">
                     <section className="glass-card p-6 border-b-4 border-primary-500">
                         <div className="text-center">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-accent-purple mx-auto flex items-center justify-center text-2xl font-bold text-white mb-4 shadow-xl overflow-hidden">
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-accent-purple mx-auto flex items-center justify-center text-2xl font-bold text-white mb-4 shadow-xl overflow-hidden relative">
                                 {user?.profile_photo
-                                    ? <img src={user.profile_photo.startsWith('http') ? user.profile_photo : `${BASE_BACKEND_URL}${user.profile_photo}`} className="w-full h-full object-cover" alt="avatar" />
+                                    ? <Image src={user.profile_photo.startsWith('http') ? user.profile_photo : `${BASE_BACKEND_URL}${user.profile_photo}`} fill className="object-cover" alt="avatar" unoptimized />
                                     : user?.name?.[0]?.toUpperCase()
                                 }
                             </div>

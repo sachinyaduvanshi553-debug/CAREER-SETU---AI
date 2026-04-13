@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, Star, Clock, CheckCircle2, AlertCircle, User, Volume2, VolumeX, MessageSquare, Camera, FileIcon, Upload, X, Phone, Mail, Edit3, Save, ChevronRight, Loader2, Plus, ShieldCheck, Briefcase, Trophy, Flame, Shield, Hexagon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { api, BASE_BACKEND_URL } from "@/lib/api";
 import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
 import { useNotify } from "@/components/NotificationProvider";
@@ -185,8 +186,8 @@ export default function WorkerDashboard({ user }: { user: any }) {
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6"
             >
                 <div className="flex items-center gap-4">
-                    <Link href="/" className="w-12 h-12 flex-shrink-0 group">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-contain transition-transform group-hover:scale-110" />
+                    <Link href="/" className="w-12 h-12 flex-shrink-0 group relative">
+                        <Image src="/logo.png" alt="Logo" width={48} height={48} className="object-contain transition-transform group-hover:scale-110" />
                     </Link>
                     <div>
                         <p className="text-muted-foreground/60 text-[10px] font-mono mb-0.5 uppercase tracking-[0.2em] font-bold">Portal · Worker</p>
@@ -541,7 +542,7 @@ export default function WorkerDashboard({ user }: { user: any }) {
                                                             <a href={src} target="_blank" className="text-xs text-primary-400 hover:underline">View →</a>
                                                         </div>
                                                     ) : (
-                                                        <img src={src} alt={`Work ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                                        <Image src={src} alt={`Work ${i + 1}`} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                                                     )}
                                                 </motion.div>
                                             );
@@ -612,9 +613,9 @@ export default function WorkerDashboard({ user }: { user: any }) {
                     {/* Profile card */}
                     <motion.section className="glass-card p-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
                         <div className="flex items-center gap-4 mb-5">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-amber/40 to-orange-600/40 border border-accent-amber/20 flex items-center justify-center text-2xl font-bold text-white overflow-hidden flex-shrink-0">
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-amber/40 to-orange-600/40 border border-accent-amber/20 flex items-center justify-center text-2xl font-bold text-white overflow-hidden flex-shrink-0 relative">
                                 {user?.profile_photo
-                                    ? <img src={user.profile_photo.startsWith('http') ? user.profile_photo : `${BASE_BACKEND_URL}${user.profile_photo}`} alt="avatar" className="w-full h-full object-cover" />
+                                    ? <Image src={user.profile_photo.startsWith('http') ? user.profile_photo : `${BASE_BACKEND_URL}${user.profile_photo}`} alt="avatar" fill className="object-cover" unoptimized />
                                     : user?.name?.[0]?.toUpperCase()
                                 }
                             </div>
