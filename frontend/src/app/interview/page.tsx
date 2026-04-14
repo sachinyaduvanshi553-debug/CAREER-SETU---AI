@@ -32,7 +32,7 @@ export default function InterviewPage() {
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+            const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
             if (SpeechRecognition) {
                 const recognition = new SpeechRecognition();
                 recognition.continuous = true;
