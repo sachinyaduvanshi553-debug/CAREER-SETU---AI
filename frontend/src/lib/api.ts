@@ -189,4 +189,10 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data)
     }),
+
+    // AI Cover Letter (New Feature)
+    generateCoverLetter: (data: { target_role: string, job_description?: string }) => fetchWithAuth("/cover-letter/generate", {
+        method: "POST",
+        body: JSON.stringify(data)
+    }),
 };

@@ -10,9 +10,13 @@ import {
     BarChart2, Clock, Star, CheckCircle2, Loader2, Badge
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { api, BASE_BACKEND_URL } from "@/lib/api";
 import { useNotify } from "@/components/NotificationProvider";
 import { FadeIn, Spinner, Skeleton, EmptyState, HoverCard } from "@/components/ui";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
+import SessionTimer from "./SessionTimer";
+import ActivityHeatmap from "./ActivityHeatmap";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -91,6 +95,9 @@ type Cert = { name: string; issuer: string; year: string; url: string };
 export default function ProfessionalDashboard({ user }: { user: any }) {
     const notify = useNotify();
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // ── Activity Tracking ───────────────────────────────────────
+    const { sessionTime, stats: activityStats, logActivity } = useActivityTracker(user?.email);
 
     // ── Dashboard data ──────────────────────────────────────────
     const [stats, setStats] = useState({ careerScore: 72, recommendations: [] as any[], skills: [] as any[] });
@@ -174,6 +181,7 @@ export default function ProfessionalDashboard({ user }: { user: any }) {
                 education_history: education,
                 certifications_list: certs,
             });
+            logActivity(5); // Award 5 intensity points for updating profile!
             notify("success", "Profile Updated!", "All your professional details have been saved.");
             setShowEditor(false);
         } catch (err: any) {
@@ -233,8 +241,8 @@ export default function ProfessionalDashboard({ user }: { user: any }) {
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6"
             >
                 <div className="flex items-center gap-4">
-                    <Link href="/" className="w-12 h-12 flex-shrink-0 group">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-contain transition-transform group-hover:scale-110" />
+                    <Link href="/" className="w-12 h-12 flex-shrink-0 group relative">
+                        <Image src="/logo.png" alt="Logo" width={48} height={48} className="object-contain transition-transform group-hover:scale-110" />
                     </Link>
                     <div>
                         <p className="text-dark-500 text-[10px] font-mono mb-0.5 uppercase tracking-[0.2em] font-bold">Portal · Pro</p>
@@ -539,6 +547,16 @@ export default function ProfessionalDashboard({ user }: { user: any }) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left: Main content */}
                 <div className="lg:col-span-2 space-y-6">
+                    {/* ── Activity Tracker Widgets ── */}
+                    <div className="space-y-6 mb-8">
+                        <SessionTimer 
+                            sessionSeconds={sessionTime} 
+                            totalMinutes={activityStats.totalMinutes} 
+                            currentStreak={activityStats.currentStreak} 
+                        />
+                        <ActivityHeatmap activityDates={activityStats.activityDates} />
+                    </div>
+
                     {/* ── Marketplace CTA ── */}
                     <motion.section
                         className="gsap-card glass-card p-6 border-l-4 border-primary-500 bg-primary-500/5 relative overflow-hidden group"
@@ -789,7 +807,7 @@ export default function ProfessionalDashboard({ user }: { user: any }) {
                         <div className="text-center mb-5">
                             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-accent-purple mx-auto flex items-center justify-center text-2xl font-bold text-white shadow-xl overflow-hidden mb-3">
                                 {user?.profile_photo
-                                    ? <img src={user.profile_photo.startsWith('http') ? user.profile_photo : `${BASE_BACKEND_URL}${user.profile_photo}`} alt="avatar" className="w-full h-full object-cover" />
+                                    ? <Image src={user.profile_photo.startsWith('http') ? user.profile_photo : `${BASE_BACKEND_URL}${user.profile_photo}`} alt="avatar" width={64} height={64} className="object-cover" unoptimized />
                                     : user?.name?.[0]?.toUpperCase()
                                 }
                             </div>

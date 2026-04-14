@@ -126,16 +126,16 @@ export default function RegisterPage() {
                 <div className="text-center mb-8 relative">
                 <div className="text-center mb-10 relative">
                     <Link href="/" className="inline-flex items-center gap-3 mb-8 group">
-                        <div className="w-12 h-12 bg-white/5 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 bg-muted/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-border/40 group-hover:scale-110 transition-transform">
                             <img src="/logo.png" alt="Logo" className="w-9 h-9 object-contain" />
                         </div>
-                        <span className="text-2xl font-bold font-display text-white tracking-tight">Career Setu <span className="text-primary-400">AI</span></span>
+                        <span className="text-2xl font-bold font-display text-foreground tracking-tight">Career Setu <span className="text-primary">AI</span></span>
                     </Link>
-                    <h1 className="text-3xl font-bold font-display text-white">Create Account</h1>
+                    <h1 className="text-3xl font-bold font-display text-foreground">Create Account</h1>
                     {form.role === 'customer' ? (
-                        <p className="text-dark-400 text-sm mt-2 font-medium">Step 1 of 1 — Basic Info</p>
+                        <p className="text-muted-foreground text-sm mt-2 font-medium">Step 1 of 1 — Basic Info</p>
                     ) : (
-                        <p className="text-dark-400 text-sm mt-2 font-medium">Step {step} of 3 — {step === 1 ? "Basic Info" : step === 2 ? "Your Skills" : "Your Interests"}</p>
+                        <p className="text-muted-foreground text-sm mt-2 font-medium">Step {step} of 3 — {step === 1 ? "Basic Info" : step === 2 ? "Your Skills" : "Your Interests"}</p>
                     )}
                 </div>
                 </div>
@@ -143,10 +143,10 @@ export default function RegisterPage() {
                 {/* Progress Bar */}
                 <div className="flex gap-2 mb-6">
                     {form.role === 'customer' ? (
-                        <div className="flex-1 h-1.5 rounded-full bg-gradient-to-r from-primary-500 to-accent-purple" />
+                        <div className="flex-1 h-1.5 rounded-full bg-primary" />
                     ) : (
                         [1, 2, 3].map(s => (
-                            <div key={s} className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${s <= step ? "bg-gradient-to-r from-primary-500 to-accent-purple" : "bg-dark-800"}`} />
+                            <div key={s} className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${s <= step ? "bg-primary" : "bg-muted"}`} />
                         ))
                     )}
                 </div>
@@ -157,22 +157,22 @@ export default function RegisterPage() {
                         {step === 1 && (
                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4 mb-4">
-                                   <label className="text-sm text-dark-300 col-span-2">Select Your Role</label>
+                                   <label className="text-sm text-muted-foreground col-span-2">Select Your Role</label>
                                    {['professional', 'worker', 'customer'].map(r => (
                                        <button 
                                            key={r}
                                            type="button" 
                                            onClick={() => setForm({ ...form, role: r })}
-                                           className={`p-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${form.role === r ? 'bg-primary-500/20 border-primary-500 text-primary-400 shadow-lg shadow-primary-500/10' : 'bg-slate-900/50 border-white/5 text-dark-400 hover:border-white/10'}`}
+                                           className={`p-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${form.role === r ? 'bg-primary/20 border-primary text-primary shadow-lg shadow-primary/10' : 'bg-muted/50 border-border text-muted-foreground hover:border-primary/30'}`}
                                        >
                                            {r}
                                        </button>
                                    ))}
                                 </div>
                                 <div>
-                                    <label className="text-sm text-dark-300 mb-2 block">Full Name</label>
+                                    <label className="text-sm text-muted-foreground mb-2 block">Full Name</label>
                                     <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
                                         <input type="text" id="name" name="name" placeholder="Your full name" required className="input-field !pl-11"
                                             value={form.name} 
                                             onChange={e => setForm({ ...form, name: e.target.value })} 
@@ -180,17 +180,17 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-dark-300 mb-2 block">Email Address</label>
+                                    <label className="text-sm text-muted-foreground mb-2 block">Email Address</label>
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
                                         <input type="email" placeholder="you@example.com" required className="input-field !pl-11"
                                             value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-dark-300 mb-2 block">Phone Number (with country code)</label>
+                                    <label className="text-sm text-muted-foreground mb-2 block">Phone Number (with country code)</label>
                                     <div className="relative">
-                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
                                         <input type="tel" id="phone" name="phone" placeholder="+91 9876543210" required className="input-field !pl-11"
                                             value={form.phone} 
                                             onChange={e => setForm({ ...form, phone: e.target.value })} 
@@ -198,29 +198,29 @@ export default function RegisterPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-dark-300 mb-2 block">Password</label>
+                                    <label className="text-sm text-muted-foreground mb-2 block">Password</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
                                         <input type={show ? "text" : "password"} placeholder="••••••••" required className="input-field !pl-11 !pr-11"
                                             value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-                                        <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-500 hover:text-dark-300">
+                                        <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground">
                                             {show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                         </button>
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-dark-300 mb-2 block">Location (City/State)</label>
+                                    <label className="text-sm text-muted-foreground mb-2 block">Location (City/State)</label>
                                     <div className="relative">
-                                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
                                         <input type="text" placeholder="e.g. Bangalore, Karnataka" required className="input-field !pl-11"
                                             value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-dark-300 mb-2 block">Education Level</label>
+                                    <label className="text-sm text-muted-foreground mb-2 block">Education Level</label>
                                     <div className="relative">
-                                        <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
-                                        <select required className="input-field !pl-11 appearance-none"
+                                        <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
+                                        <select required className="input-field !pl-11 appearance-none bg-background text-foreground"
                                             value={form.education} onChange={e => setForm({ ...form, education: e.target.value })} >
                                             <option value="">Select education level</option>
                                             <option value="10th">10th Pass</option>
@@ -246,8 +246,8 @@ export default function RegisterPage() {
                                                 {skills.map(skill => (
                                                     <button key={skill} type="button" onClick={() => toggleSkill(skill)}
                                                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${form.selectedSkills.includes(skill)
-                                                                ? "bg-primary-500/20 text-primary-300 border border-primary-500/40"
-                                                                 : "bg-dark-800 text-dark-400 border border-white/5 hover:border-white/20"
+                                                                ? "bg-primary/20 text-primary border border-primary/40"
+                                                                 : "bg-muted text-muted-foreground border border-border hover:border-primary/30"
                                                             }`}
                                                     >
                                                         {skill}
@@ -270,8 +270,8 @@ export default function RegisterPage() {
                                         {INTERESTS.map(interest => (
                                             <button key={interest} type="button" onClick={() => toggleInterest(interest)}
                                                 className={`p-4 rounded-xl text-sm font-medium text-left transition-all duration-200 ${form.interests.includes(interest)
-                                                        ? "bg-primary-500/15 text-primary-300 border border-primary-500/30"
-                                                        : "bg-dark-800/80 text-dark-400 border border-white/5 hover:border-white/20"
+                                                        ? "bg-primary/15 text-primary border border-primary/30"
+                                                        : "bg-muted text-muted-foreground border border-border hover:border-primary/30"
                                                     }`}
                                             >
                                                 {interest}
@@ -295,8 +295,8 @@ export default function RegisterPage() {
                     </form>
 
                     {step === 1 && (
-                        <div className="mt-6 text-center text-sm text-dark-400">
-                            Already have an account? <Link href="/login" className="text-primary-400 hover:text-primary-300 font-medium">Sign in</Link>
+                        <div className="mt-6 text-center text-sm text-muted-foreground">
+                            Already have an account? <Link href="/login" className="text-primary hover:text-primary/80 font-medium">Sign in</Link>
                         </div>
                     )}
                 </div>

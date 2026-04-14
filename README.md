@@ -36,12 +36,14 @@ git clone https://github.com/sachinyaduvanshi553-debug/CAREER-SETU---AI.git
 cd CAREER-SETU---AI
 docker-compose up --build
 ```
+
 - App: `http://localhost:3000`
 - API: `http://localhost:8000/docs`
 
 ### Manual Setup
 
 #### Backend
+
 ```bash
 cd backend
 python -m venv venv && source venv/bin/activate
@@ -51,6 +53,7 @@ python -m app.main
 ```
 
 #### Frontend
+
 ```bash
 cd frontend
 npm install

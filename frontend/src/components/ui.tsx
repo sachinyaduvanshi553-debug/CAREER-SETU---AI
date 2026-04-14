@@ -5,20 +5,20 @@ import { motion } from "framer-motion";
 // ─── Skeleton loader ─────────────────────────────────────────────────────────
 export function Skeleton({ className = "" }: { className?: string }) {
     return (
-        <div className={`animate-pulse bg-white/5 rounded-xl ${className}`} />
+        <div className={`animate-pulse bg-muted rounded-xl ${className}`} />
     );
 }
 
 // ─── Full-page loading screen ─────────────────────────────────────────────────
 export function PageLoader({ label = "Loading..." }: { label?: string }) {
     return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm">
             <div className="relative w-16 h-16">
-                <div className="absolute inset-0 rounded-full border-2 border-primary-500/20" />
-                <div className="absolute inset-0 rounded-full border-t-2 border-primary-500 animate-spin" />
+                <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+                <div className="absolute inset-0 rounded-full border-t-2 border-primary animate-spin" />
                 <div className="absolute inset-2 rounded-full border-t-2 border-accent-purple animate-spin" style={{ animationDirection: "reverse", animationDuration: "0.6s" }} />
             </div>
-            <p className="mt-4 text-dark-400 text-sm font-medium animate-pulse">{label}</p>
+            <p className="mt-4 text-muted-foreground text-sm font-medium animate-pulse">{label}</p>
         </div>
     );
 }
@@ -117,11 +117,11 @@ export function EmptyState({
             animate={{ opacity: 1, scale: 1 }}
             className="glass-card p-12 flex flex-col items-center text-center"
         >
-            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-                <Icon className="w-8 h-8 text-dark-500" />
+            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                <Icon className="w-8 h-8 text-muted-foreground/50" />
             </div>
-            <h3 className="text-white font-bold text-lg mb-2">{title}</h3>
-            {description && <p className="text-dark-400 text-sm max-w-sm">{description}</p>}
+            <h3 className="text-foreground font-bold text-lg mb-2">{title}</h3>
+            {description && <p className="text-muted-foreground text-sm max-w-sm">{description}</p>}
             {action && (
                 <button onClick={action.onClick} className="btn-primary mt-6 text-sm !px-6 !py-2">
                     {action.label}
@@ -134,15 +134,15 @@ export function EmptyState({
 // ─── Status badge ─────────────────────────────────────────────────────────────
 export function StatusBadge({ status }: { status: string }) {
     const map: Record<string, string> = {
-        pending: "bg-accent-amber/10 border-accent-amber/30 text-accent-amber",
-        accepted: "bg-blue-500/10 border-blue-500/30 text-blue-400",
-        completed: "bg-accent-emerald/10 border-accent-emerald/30 text-accent-emerald",
-        cancelled: "bg-red-500/10 border-red-500/30 text-red-400",
-        verified: "bg-accent-emerald/10 border-accent-emerald/30 text-accent-emerald",
-        unverified: "bg-dark-700/50 border-white/10 text-dark-400",
+        pending: "bg-amber-500/10 border-amber-500/30 text-amber-500",
+        accepted: "bg-blue-500/10 border-blue-500/30 text-blue-500",
+        completed: "bg-emerald-500/10 border-emerald-500/30 text-emerald-500",
+        cancelled: "bg-destructive/10 border-destructive/30 text-destructive",
+        verified: "bg-emerald-500/10 border-emerald-500/30 text-emerald-500",
+        unverified: "bg-muted border-border text-muted-foreground",
     };
     return (
-        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${map[status] || "bg-white/5 border-white/10 text-dark-400"}`}>
+        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${map[status] || "bg-muted border-border text-muted-foreground"}`}>
             {status}
         </span>
     );
