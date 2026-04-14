@@ -39,7 +39,7 @@ export default function WorkerDashboard({ user }: { user: any }) {
                 api.getWorkerRequests(),
                 api.getWorkerProfile()
             ]);
-            setRequests(reqs || []);
+            setRequests(Array.isArray(reqs) ? reqs : (reqs?.requests || []));
             setWorkerStats(profile);
             if (profile && profile.status !== "incomplete") {
                 setProfileForm({

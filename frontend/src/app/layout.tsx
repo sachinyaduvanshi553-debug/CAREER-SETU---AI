@@ -4,6 +4,9 @@ import { NotificationProvider } from "@/components/NotificationProvider";
 import { GlobalVoiceAssistant } from "@/components/GlobalVoiceAssistant";
 import { SocketProvider } from "@/components/SocketProvider";
 import PageTransition from "@/components/PageTransition";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { Toaster } from "sonner";
+import { SWRProvider } from "@/components/SWRProvider";
 
 export const metadata: Metadata = {
     title: "Career Setu AI — Intelligent Career & Upskilling Platform",
@@ -36,10 +39,15 @@ export default function RootLayout({
             <body className="bg-dark-950 text-dark-200 antialiased bg-grid min-h-screen relative overflow-x-hidden">
                 <NotificationProvider>
                     <SocketProvider>
-                        <PageTransition>
-                            {children}
-                        </PageTransition>
-                        <GlobalVoiceAssistant />
+                        <SWRProvider>
+                            <ErrorBoundary>
+                                <PageTransition>
+                                    {children}
+                                </PageTransition>
+                            </ErrorBoundary>
+                            <GlobalVoiceAssistant />
+                        </SWRProvider>
+                        <Toaster position="bottom-right" theme="dark" richColors />
                     </SocketProvider>
                 </NotificationProvider>
             </body>

@@ -24,7 +24,7 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
         const loadHistory = async () => {
             try {
                 const history = await api.getChatHistory(user.email);
-                setMessages(history);
+                setMessages(Array.isArray(history) ? history : (history?.messages || []));
             } catch (err) {
                 console.error("Failed to load chat history", err);
             }

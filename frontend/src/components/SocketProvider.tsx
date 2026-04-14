@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, createContext, useContext, useCallback, useRef } from "react";
-import { useNotify } from "@/components/NotificationProvider";
+import { toast } from "sonner";
 
 // Dynamically import socket.io-client only on the client side to avoid SSR issues
 interface SocketContextType {
@@ -18,7 +18,7 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const [isConnected, setIsConnected] = useState(false);
     const socketRef = useRef<any>(null);
-    const notify = useNotify();
+
 
     useEffect(() => {
         // Only run on the client side
@@ -67,7 +67,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
             socketInstance.on("request_update", (data: any) => {
                 console.log("[Socket] Request update:", data);
-                notify("info", "Work Update", data.message || `Request #${data.id} is now ${data.status}`);
+                toast.info("Work Update", { description: data.message || `Request #${data.id} is now ${data.status}` });
                 window.dispatchEvent(new CustomEvent("WORK_REQUEST_UPDATE", { detail: data }));
             });
 

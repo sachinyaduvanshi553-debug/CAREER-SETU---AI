@@ -12,8 +12,19 @@ import csv
 import random
 import json
 import logging
+import sentry_sdk
 from datetime import datetime, timedelta
 from pypdf import PdfReader
+
+# Initialize Sentry
+sentry_dsn = os.getenv("SENTRY_DSN", "")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
+
 
 # Internal Imports - Using relative imports for reliability within the package
 try:
@@ -443,9 +454,13 @@ async def get_roadmap(role_id: str):
     # For demo, assuming these are missing skills
     return await roadmap_generator.generate(role.requiredSkills, target_role=role.title)
 
+from fastapi import Response
+
 @app.get("/api/jobs", response_model=List[JobListing])
 @app.get("/jobs", response_model=List[JobListing])
-async def get_jobs(skills: str = "Python", location: Optional[str] = None):
+async def get_jobs(response: Response, skills: str = "Python", location: Optional[str] = None):
+    # Add Edge Caching headers
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=60"
     """
     Fetch jobs matching the user's skills and location.
     Combines live jobs from Adzuna API with high-quality local results.

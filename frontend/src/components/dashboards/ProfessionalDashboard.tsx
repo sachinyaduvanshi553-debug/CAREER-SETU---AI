@@ -17,7 +17,7 @@ import { FadeIn, Spinner, Skeleton, EmptyState, HoverCard } from "@/components/u
 gsap.registerPlugin(ScrollTrigger);
 
 /* ── Animated circular career score ─────────────────────────── */
-function CircularProgress({ value, size = 130, stroke = 10 }: { value: number; size?: number; stroke?: number }) {
+export function CircularProgress({ value, size = 130, stroke = 10 }: { value: number; size?: number; stroke?: number }) {
     const radius = (size - stroke) / 2;
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (value / 100) * circumference;
