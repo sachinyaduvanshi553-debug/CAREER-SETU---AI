@@ -26,10 +26,10 @@ export default function ChatSidebar({ onSelectUser, selectedUser, currentUser }:
             try {
                 if (view === "discover") {
                     const allUsers = await api.getChatUsers(searchQuery);
-                    setUsers(allUsers);
+                    setUsers(Array.isArray(allUsers) ? allUsers : (allUsers?.users || []));
                 } else {
                     const convs = await api.getConversations();
-                    setConversations(convs);
+                    setConversations(Array.isArray(convs) ? convs : (convs?.conversations || []));
                 }
             } catch (err) {
                 console.error("Failed to fetch sidebar data", err);

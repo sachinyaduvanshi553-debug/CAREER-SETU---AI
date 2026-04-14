@@ -47,7 +47,7 @@ export function GlobalVoiceAssistant() {
              // If mic stopped, and we have guidance for current page - tell them.
              // Actually, the button itself can trigger the guidance.
         }
-    }, [isListening]);
+    }, [isListening, isVoiceEnabled, hasInteracted]);
 
     const handleHelpRequest = () => {
         setHasInteracted(true);
@@ -91,7 +91,7 @@ export function GlobalVoiceAssistant() {
             }
         }, 1200);
         return () => clearTimeout(timer);
-    }, [pathname, isVoiceEnabled, hasInteracted]);
+    }, [pathname, isVoiceEnabled, hasInteracted, speak]);
 
     // Voice Wave Component
     const VoiceWave = () => (

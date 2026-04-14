@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { api } from "@/lib/api";
+import { useProfile } from "@/hooks/useApi";
 import Navbar from "@/components/Navbar";
 import ProfessionalDashboard from "@/components/dashboards/ProfessionalDashboard";
 import WorkerDashboard from "@/components/dashboards/WorkerDashboard";
@@ -67,30 +67,20 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardPage() {
-    const [user, setUser] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+    const { data: user, isLoading: loading, error } = useProfile();
     const notify = useNotify();
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        async function loadProfile() {
-            try {
-                const profile = await api.getProfile();
-                setUser(profile);
-            } catch (err: any) {
-                console.error("Failed to load profile", err);
-                // If 401 / no token, redirect to login
-                if (err?.message?.includes("401") || err?.message?.includes("403") || err?.message?.includes("not authenticated")) {
-                    window.location.href = "/login";
-                } else {
-                    notify("error", "Failed to load dashboard", "Please refresh the page.");
-                }
-            } finally {
-                setLoading(false);
+        if (error) {
+            console.error("Failed to load profile", error);
+            if (error?.message?.includes("401") || error?.message?.includes("403") || error?.message?.includes("not authenticated")) {
+                window.location.href = "/login";
+            } else {
+                notify("error", "Failed to load dashboard", "Please refresh the page.");
             }
         }
-        loadProfile();
-    }, []);
+    }, [error, notify]);
 
     // GSAP scroll animation on mount
     useEffect(() => {

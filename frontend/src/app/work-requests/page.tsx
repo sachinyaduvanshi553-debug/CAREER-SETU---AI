@@ -18,7 +18,7 @@ export default function WorkRequestsPage() {
     const fetchRequests = async () => {
         try {
             const data = await api.getWorkerRequests();
-            setRequests(data);
+            setRequests(Array.isArray(data) ? data : (data?.requests || []));
         } catch (error: any) {
             notify("error", "Failed to load requests", error?.message);
         } finally {

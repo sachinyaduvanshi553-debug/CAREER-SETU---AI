@@ -5,6 +5,7 @@ from ..models import WorkerProfile, UserRole, UserProfile
 from ..auth import RoleChecker, get_current_user_email
 from ..database import get_db
 from ..socket_manager import notify_user, broadcast_worker_update
+from ..services.cdn_service import upload_file_to_cdn
 from bson import ObjectId
 from datetime import datetime
 
@@ -76,12 +77,17 @@ async def upload_work_file(
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
     
     try:
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        # Upload directly to CDN instead of filesystem
+        cdn_url = await upload_file_to_cdn(file, folder="worker_portfolio")
+        if cdn_url:
+            public_url = cdn_url
+        else:
+            # Fallback local save if CDN fails
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            public_url = f"/uploads/chat/{unique_filename}"
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
-    
-    public_url = f"/uploads/chat/{unique_filename}"
     
     # Categorize based on extension
     target_field = "work_videos" if file_ext in {".mp4", ".webm"} else "work_photos"
