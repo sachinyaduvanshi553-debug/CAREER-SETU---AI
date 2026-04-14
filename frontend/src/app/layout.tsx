@@ -7,6 +7,7 @@ import PageTransition from "@/components/PageTransition";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Toaster } from "sonner";
 import { SWRProvider } from "@/components/SWRProvider";
+import PWARegister from "@/components/PWARegister";
 
 export const metadata: Metadata = {
     title: "Career Setu AI — Intelligent Career & Upskilling Platform",
@@ -34,6 +35,7 @@ export default function RootLayout({
     return (
         <html lang="en" className="dark" suppressHydrationWarning>
             <body className="bg-dark-950 text-dark-200 antialiased bg-grid min-h-screen relative overflow-x-hidden">
+                <PWARegister />
                 <NotificationProvider>
                     <SocketProvider>
                         <SWRProvider>
