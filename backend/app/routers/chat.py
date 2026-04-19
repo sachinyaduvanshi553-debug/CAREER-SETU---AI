@@ -13,23 +13,7 @@ router = APIRouter(prefix="/api/chat", tags=["Chat"])
 UPLOAD_DIR = "uploads/chat"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: Dict[str, WebSocket] = {}
-
-    async def connect(self, user_email: str, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections[user_email] = websocket
-
-    def disconnect(self, user_email: str):
-        if user_email in self.active_connections:
-            del self.active_connections[user_email]
-
-    async def send_personal_message(self, message: dict, receiver_email: str):
-        if receiver_email in self.active_connections:
-            await self.active_connections[receiver_email].send_json(message)
-
-manager = ConnectionManager()
+# ConnectionManager removed. Using Native Socket.io in socket_manager.py
 
 @router.post("/upload")
 async def upload_chat_media(
@@ -53,57 +37,46 @@ async def upload_chat_media(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
-@router.websocket("/ws/{token}")
-async def websocket_endpoint(websocket: WebSocket, token: str):
-    payload = decode_access_token(token)
-    if not payload:
-        await websocket.close(code=1008)
-        return
+@router.get("/connection-status/{target_email}")
+async def get_connection_status(target_email: str, current_email: str = Depends(get_current_user_email)):
+    db = get_db()
+    conn = await db["chat_connections"].find_one({
+        "$or": [
+            {"user1": current_email, "user2": target_email},
+            {"user1": target_email, "user2": current_email}
+        ]
+    })
     
-    user_email = payload.get("sub")
-    await manager.connect(user_email, websocket)
+    if not conn:
+        return {"status": "none"}
+        
+    return {
+        "status": conn["status"],
+        "requested_by": conn.get("requested_by"),
+        "timestamp": conn.get("timestamp")
+    }
+
+@router.get("/requests/pending")
+async def get_pending_requests(current_email: str = Depends(get_current_user_email)):
+    db = get_db()
+    # Find requests where the current user is pending receiver
+    requests = await db["chat_connections"].find({
+        "$or": [
+            {"user1": current_email, "requested_by": {"$ne": current_email}, "status": "pending"},
+            {"user2": current_email, "requested_by": {"$ne": current_email}, "status": "pending"}
+        ]
+    }).to_list(length=100)
     
-    try:
-        while True:
-            data = await websocket.receive_json()
-            # data format: {"receiver": "email", "message": "text", "type": "text", "file_url": "url", "latitude": lat, "longitude": lng}
-            receiver_email = data.get("receiver")
-            message_text = data.get("message")
-            msg_type = data.get("type", "text")
-            file_url = data.get("file_url")
-            lat = data.get("latitude")
-            lng = data.get("longitude")
-            
-            if receiver_email:
-                msg_payload = {
-                    "sender": user_email,
-                    "message": message_text,
-                    "type": msg_type,
-                    "file_url": file_url,
-                    "latitude": lat,
-                    "longitude": lng,
-                    "timestamp": datetime.utcnow().isoformat()
-                }
-                
-                # 1. Save to DB
-                db = get_db()
-                await db["chats"].insert_one({
-                    "sender_id": user_email,
-                    "receiver_id": receiver_email,
-                    "message": message_text,
-                    "type": msg_type,
-                    "file_url": file_url,
-                    "latitude": lat,
-                    "longitude": lng,
-                    "timestamp": datetime.utcnow(),
-                    "is_read": False
-                })
-                
-                # 2. Forward to receiver if online
-                await manager.send_personal_message(msg_payload, receiver_email)
-                
-    except WebSocketDisconnect:
-        manager.disconnect(user_email)
+    formatted_requests = []
+    for req in requests:
+        other_user = req["user1"] if req["user2"] == current_email else req["user2"]
+        user_info = await db["users"].find_one({"email": other_user})
+        formatted_requests.append({
+            "requester_email": other_user,
+            "requester_name": user_info.get("name", other_user) if user_info else other_user,
+            "status": req["status"]
+        })
+    return formatted_requests
 
 @router.get("/history/{receiver_email}")
 async def get_chat_history(receiver_email: str, token: str):
@@ -115,7 +88,7 @@ async def get_chat_history(receiver_email: str, token: str):
     db = get_db()
     
     # Fetch messages between sub and receiver_email
-    messages = await db["chats"].find({
+    messages = await db["messages"].find({
         "$or": [
             {"sender_id": user_email, "receiver_id": receiver_email},
             {"sender_id": receiver_email, "receiver_id": user_email}
@@ -154,7 +127,7 @@ async def get_conversations(current_email: str = Depends(get_current_user_email)
     """ Returns a list of users the current user has chatted with. """
     db = get_db()
     # Find unique receiver_ids where sender is current_email OR unique sender_ids where receiver is current_email
-    chats = await db["chats"].find({
+    chats = await db["messages"].find({
         "$or": [{"sender_id": current_email}, {"receiver_id": current_email}]
     }).sort("timestamp", -1).to_list(length=1000)
     

@@ -6,17 +6,20 @@ import { toast } from "sonner";
 interface SocketContextType {
     isConnected: boolean;
     emit: (event: string, data: any) => void;
+    socket: any | null;
 }
 
 const SocketContext = createContext<SocketContextType>({
     isConnected: false,
     emit: () => {},
+    socket: null,
 });
 
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const [isConnected, setIsConnected] = useState(false);
+    const [socket, setSocket] = useState<any>(null);
     const socketRef = useRef<any>(null);
 
 
@@ -76,6 +79,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
             });
 
             socketRef.current = socketInstance;
+            setSocket(socketInstance);
         }).catch((err) => {
             console.warn("[Socket] Failed to load socket.io-client:", err);
         });
@@ -95,7 +99,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     return (
-        <SocketContext.Provider value={{ isConnected, emit }}>
+        <SocketContext.Provider value={{ isConnected, emit, socket }}>
             {children}
         </SocketContext.Provider>
     );

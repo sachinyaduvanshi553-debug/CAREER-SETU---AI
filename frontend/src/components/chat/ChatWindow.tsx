@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { api, getWsUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 import MessageBubble from "./MessageBubble";
-import { Send, Paperclip, ImageIcon, Video, X, MoreVertical, Phone, VideoIcon, Search, Smile, MapPin, MessageSquare, ShieldCheck } from "lucide-react";
+import { Send, Paperclip, ImageIcon, Video, X, MoreVertical, Phone, VideoIcon, Search, Smile, MapPin, MessageSquare, ShieldCheck, UserCheck, UserX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSocket } from "@/components/SocketProvider";
 
 interface ChatWindowProps {
     user: any;
@@ -17,41 +18,66 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [isSharingLocation, setIsSharingLocation] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
-    const ws = useRef<WebSocket | null>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const { socket } = useSocket();
+    const [connectionStatus, setConnectionStatus] = useState<string>("none");
+    const [requestBy, setRequestBy] = useState<string | null>(null);
+    const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
-    // Fetch history and connect WebSocket
+    // Fetch connection status, history and listen to socket
     useEffect(() => {
         const loadHistory = async () => {
             try {
                 const history = await api.getChatHistory(user.email);
-                setMessages(Array.isArray(history) ? history : (history?.messages || []));
+                setMessages(history);
             } catch (err) {
-                console.error("Failed to load chat history", err);
+                console.error("Failed to load chat setup", err);
+            } finally {
+                if (isMounted) setIsCheckingStatus(false);
             }
         };
 
-        loadHistory();
+        loadInitialData();
 
-        // Connect WebSocket
-        const token = localStorage.getItem("token");
-        const wsUrl = getWsUrl(`/chat/ws/${token}`);
-        ws.current = new WebSocket(wsUrl);
+        if (socket) {
+            const handleMessage = (data: any) => {
+                if (data.sender === user.email || data.sender === currentUser.email) {
+                    setMessages(prev => [...prev, data]);
+                }
+            };
 
-        ws.current.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            // Only add if it's from current chat partner or to them
-            if (data.sender === user.email || data.sender === currentUser.email) {
-                setMessages(prev => [...prev, data]);
-            }
-        };
+            const handleRequestReceived = (data: any) => {
+                if (data.requester_email === user.email) {
+                    setConnectionStatus("pending");
+                    setRequestBy(data.requester_email);
+                }
+            };
 
-        ws.current.onerror = (err) => console.error("WS Error", err);
-        ws.current.onclose = () => console.log("WS Closed");
+            const handleRequestUpdated = (data: any) => {
+                if (data.receiver_email === user.email || data.receiver_email === currentUser.email) {
+                    setConnectionStatus(data.status);
+                    if (data.status === "accepted") {
+                        api.getChatHistory(user.email).then(history => {
+                            if (isMounted) setMessages(history);
+                        });
+                    }
+                }
+            };
 
-        return () => {
-            ws.current?.close();
-        };
-    }, [user.email, currentUser?.email]);
+            socket.on("receive_message", handleMessage);
+            socket.on("chat_request_received", handleRequestReceived);
+            socket.on("chat_request_updated", handleRequestUpdated);
+
+            return () => {
+                isMounted = false;
+                socket.off("receive_message", handleMessage);
+                socket.off("chat_request_received", handleRequestReceived);
+                socket.off("chat_request_updated", handleRequestUpdated);
+            };
+        }
+
+        return () => { isMounted = false; };
+    }, [user.email, currentUser?.email, socket]);
 
     // Auto-scroll
     useEffect(() => {
@@ -60,8 +86,27 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
         }
     }, [messages]);
 
+    const handleSendRequest = () => {
+        if (!socket) return;
+        socket.emit("chat_request", { receiver_email: user.email });
+        setConnectionStatus("pending");
+        setRequestBy(currentUser.email);
+    };
+
+    const handleAcceptRequest = () => {
+        if (!socket) return;
+        socket.emit("chat_request_response", { requester_email: user.email, status: "accepted" });
+        setConnectionStatus("accepted");
+    };
+
+    const handleDeclineRequest = () => {
+        if (!socket) return;
+        socket.emit("chat_request_response", { requester_email: user.email, status: "declined" });
+        setConnectionStatus("declined");
+    };
+
     const handleSendMessage = () => {
-        if (!input.trim() || !ws.current) return;
+        if (!input.trim() || !socket || connectionStatus !== "accepted") return;
 
         const data = {
             receiver: user.email,
@@ -70,8 +115,8 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
             file_url: null
         };
 
-        ws.current.send(JSON.stringify(data));
-        
+        socket.emit("private_message", data);
+
         // Optimistically add to local messages
         const localMsg = {
             sender: currentUser.email,
@@ -85,7 +130,7 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
     };
 
     const handleShareLocation = () => {
-        if (!navigator.geolocation || !ws.current) {
+        if (!navigator.geolocation || !socket) {
             alert("Geolocation is not supported by your browser");
             return;
         }
@@ -101,7 +146,7 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
                     latitude,
                     longitude
                 };
-                ws.current?.send(JSON.stringify(data));
+                socket.emit("private_message", data);
 
                 // Optimistically add
                 const localMsg = {
@@ -125,7 +170,7 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
         const file = e.target.files?.[0];
-        if (!file || !ws.current) return;
+        if (!file || !socket) return;
 
         setIsUploading(true);
         try {
@@ -137,8 +182,8 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
                     type: type,
                     file_url: res.url
                 };
-                ws.current.send(JSON.stringify(data));
-                
+                socket.emit("private_message", data);
+
                 // Optimistically add
                 const localMsg = {
                     sender: currentUser.email,
@@ -187,7 +232,7 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
             </div>
 
             {/* Messages Area */}
-            <div 
+            <div
                 ref={scrollRef}
                 className="flex-grow overflow-y-auto p-6 space-y-2 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-fixed"
             >
@@ -198,73 +243,103 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
                     </div>
                 ) : (
                     messages.map((msg, idx) => (
-                        <MessageBubble 
-                            key={idx} 
-                            message={msg} 
-                            isOwn={msg.sender === currentUser?.email} 
+                        <MessageBubble
+                            key={idx}
+                            message={msg}
+                            isOwn={msg.sender === currentUser?.email}
                         />
                     ))
                 )}
             </div>
 
-            {/* Input Area */}
-            <div className="p-4 bg-dark-900/80 backdrop-blur-xl border-t border-white/5">
-                <div className="flex items-end gap-3 max-w-4xl mx-auto">
-                    <div className="flex items-center gap-2 pb-2">
-                        <button 
-                            onClick={handleShareLocation}
-                            disabled={isSharingLocation}
-                            className={`p-2 hover:bg-white/5 rounded-full transition-all ${isSharingLocation ? "text-primary-500 animate-pulse" : "text-dark-400 hover:text-primary-400"}`}
-                            title="Share Location"
-                        >
-                            <MapPin className="w-5 h-5" />
-                        </button>
-                        <label className="cursor-pointer p-2 hover:bg-white/5 rounded-full text-dark-400 hover:text-primary-400 transition-all">
-                            <ImageIcon className="w-5 h-5" />
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'image')} />
-                        </label>
-                        <label className="cursor-pointer p-2 hover:bg-white/5 rounded-full text-dark-400 hover:text-primary-400 transition-all">
-                            <Video className="w-5 h-5" />
-                            <input type="file" accept="video/*" className="hidden" onChange={(e) => handleFileUpload(e, 'video')} />
-                        </label>
-                    </div>
-
-                    <div className="flex-grow relative group">
-                        <textarea 
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSendMessage();
-                                }
-                            }}
-                            placeholder="Type a message..."
-                            className="w-full bg-dark-800/80 border border-white/5 rounded-2xl py-3 px-4 pr-12 text-sm focus:outline-none focus:border-primary-500/50 transition-all resize-none min-h-[44px] max-h-32"
-                            rows={1}
-                        />
-                        <button className="absolute right-3 bottom-3 text-dark-500 hover:text-yellow-400 transition-colors">
-                            <Smile className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    <button 
-                        onClick={handleSendMessage}
-                        disabled={!input.trim() || isUploading || isSharingLocation}
-                        className={`p-3 rounded-2xl transition-all shadow-lg shadow-primary-500/20 ${
-                            input.trim() && !isUploading && !isSharingLocation
-                            ? "bg-primary-500 text-white hover:scale-105 active:scale-95" 
-                            : "bg-dark-800 text-dark-500 cursor-not-allowed"
-                        }`}
-                    >
-                        {isUploading ? (
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        ) : (
-                            <Send className="w-5 h-5" />
-                        )}
+            {/* Conditional Input / Request Area */}
+            {isCheckingStatus ? (
+                <div className="p-4 bg-dark-900/80 backdrop-blur-xl border-t border-white/5 flex justify-center text-dark-400">Loading chat state...</div>
+            ) : connectionStatus === "none" ? (
+                <div className="p-6 bg-dark-900/80 backdrop-blur-xl border-t border-white/5 flex flex-col items-center justify-center space-y-3">
+                    <p className="text-sm text-dark-400">You must send a chat request to message this user.</p>
+                    <button onClick={handleSendRequest} className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
+                        <UserCheck className="w-4 h-4" /> Send Chat Request
                     </button>
                 </div>
-            </div>
+            ) : connectionStatus === "pending" && requestBy === currentUser.email ? (
+                <div className="p-6 bg-dark-900/80 backdrop-blur-xl border-t border-white/5 flex justify-center">
+                    <p className="text-sm text-yellow-500 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div> Request Sent - Waiting for Approval...</p>
+                </div>
+            ) : connectionStatus === "pending" && requestBy === user.email ? (
+                <div className="p-6 bg-dark-900/80 backdrop-blur-xl border-t border-white/5 flex flex-col items-center space-y-4">
+                    <p className="text-sm text-white">{user.name || "User"} wants to chat with you.</p>
+                    <div className="flex items-center gap-3">
+                        <button onClick={handleDeclineRequest} className="bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white px-6 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
+                            <UserX className="w-4 h-4" /> Decline
+                        </button>
+                        <button onClick={handleAcceptRequest} className="bg-green-500/20 text-green-500 hover:bg-green-500 hover:text-white px-6 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
+                            <UserCheck className="w-4 h-4" /> Accept
+                        </button>
+                    </div>
+                </div>
+            ) : connectionStatus === "declined" ? (
+                <div className="p-6 bg-dark-900/80 backdrop-blur-xl border-t border-white/5 flex justify-center text-red-400 text-sm">
+                    Chat request was declined or blocked.
+                </div>
+            ) : (
+                <div className="p-4 bg-dark-900/80 backdrop-blur-xl border-t border-white/5">
+                    <div className="flex items-end gap-3 max-w-4xl mx-auto">
+                        <div className="flex items-center gap-2 pb-2">
+                            <button
+                                onClick={handleShareLocation}
+                                disabled={isSharingLocation}
+                                className={`p-2 hover:bg-white/5 rounded-full transition-all ${isSharingLocation ? "text-primary-500 animate-pulse" : "text-dark-400 hover:text-primary-400"}`}
+                                title="Share Location"
+                            >
+                                <MapPin className="w-5 h-5" />
+                            </button>
+                            <label className="cursor-pointer p-2 hover:bg-white/5 rounded-full text-dark-400 hover:text-primary-400 transition-all">
+                                <ImageIcon className="w-5 h-5" />
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'image')} />
+                            </label>
+                            <label className="cursor-pointer p-2 hover:bg-white/5 rounded-full text-dark-400 hover:text-primary-400 transition-all">
+                                <Video className="w-5 h-5" />
+                                <input type="file" accept="video/*" className="hidden" onChange={(e) => handleFileUpload(e, 'video')} />
+                            </label>
+                        </div>
+
+                        <div className="flex-grow relative group">
+                            <textarea
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendMessage();
+                                    }
+                                }}
+                                placeholder="Type a message..."
+                                className="w-full bg-dark-800/80 border border-white/5 rounded-2xl py-3 px-4 pr-12 text-sm focus:outline-none focus:border-primary-500/50 transition-all resize-none min-h-[44px] max-h-32"
+                                rows={1}
+                            />
+                            <button className="absolute right-3 bottom-3 text-dark-500 hover:text-yellow-400 transition-colors">
+                                <Smile className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={handleSendMessage}
+                            disabled={!input.trim() || isUploading || isSharingLocation}
+                            className={`p-3 rounded-2xl transition-all shadow-lg shadow-primary-500/20 ${input.trim() && !isUploading && !isSharingLocation
+                                    ? "bg-primary-500 text-white hover:scale-105 active:scale-95"
+                                    : "bg-dark-800 text-dark-500 cursor-not-allowed"
+                                }`}
+                        >
+                            {isUploading ? (
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                                <Send className="w-5 h-5" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -170,6 +170,8 @@ export const api = {
         return fetchWithAuth(`/chat/history/${receiverEmail}?token=${token}`);
     },
     uploadChatMedia: (file: File) => api.uploadFile(file, "/chat/upload"),
+    getConnectionStatus: (targetEmail: string) => fetchWithAuth(`/chat/connection-status/${targetEmail}`),
+    getPendingRequests: () => fetchWithAuth(`/chat/requests/pending`),
 
     // Identity & Verification (New)
     verifyIdentity: (docType: string, docNum: string) => fetchWithAuth("/identity/verify", { 
