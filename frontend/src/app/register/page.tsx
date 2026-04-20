@@ -129,7 +129,7 @@ export default function RegisterPage() {
                         <div className="w-12 h-12 bg-muted/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-border/40 group-hover:scale-110 transition-transform">
                             <img src="/logo.png" alt="Logo" className="w-9 h-9 object-contain" />
                         </div>
-                        <span className="text-2xl font-bold font-display text-foreground tracking-tight">Career Setu <span className="text-primary">AI</span></span>
+                        <span className="text-2xl font-bold font-display text-foreground tracking-tight">Career Bridge <span className="text-primary">AI</span></span>
                     </Link>
                     <h1 className="text-3xl font-bold font-display text-foreground">Create Account</h1>
                     {form.role === 'customer' ? (
