@@ -11,15 +11,15 @@ import PWARegister from "@/components/PWARegister";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
-    title: "Career Setu AI — Intelligent Career & Upskilling Platform",
+    title: "Career Bridge AI — Intelligent Career & Upskilling Platform",
     description:
         "AI-powered career guidance and skill development platform. Identify skill gaps, get personalized learning roadmaps, and connect with real job opportunities across India.",
-    keywords: "career guidance, skill development, AI, upskilling, jobs, India, Career Setu",
+    keywords: "career guidance, skill development, AI, upskilling, jobs, India, Career Bridge",
     manifest: "/manifest.json",
     appleWebApp: {
         capable: true,
         statusBarStyle: "black-translucent",
-        title: "Career Setu",
+        title: "Career Bridge",
     },
 };
 

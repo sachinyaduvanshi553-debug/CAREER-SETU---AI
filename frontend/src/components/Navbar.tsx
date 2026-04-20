@@ -117,7 +117,7 @@ export default function Navbar() {
                         <div className="flex items-center gap-4">
                             <Link href="/" className="flex items-center gap-3.5 group">
                                 <div className="w-10 h-10 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 relative">
-                                    <Image src="/logo.png" alt="Career Setu AI Logo" width={40} height={40} className="object-contain filter drop-shadow-[0_0_8px_rgba(99,102,241,0.3)]" />
+                                    <Image src="/logo.png" alt="Career Bridge AI Logo" width={40} height={40} className="object-contain filter drop-shadow-[0_0_8px_rgba(99,102,241,0.3)]" />
                                 </div>
                                 <span className="text-xl font-bold font-display text-foreground tracking-tight leading-none">Career Bridge <span className="text-primary font-extrabold pb-0.5">AI</span></span>
                             </Link>

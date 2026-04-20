@@ -144,7 +144,7 @@ export default function LandingPage() {
                         viewport={{ once: true }} className="text-center mb-16"
                     >
                         <h2 className="section-heading text-foreground">
-                            How <span className="gradient-text-cyan">Career Setu AI</span> Works
+                            How <span className="gradient-text-cyan">Career Bridge AI</span> Works
                         </h2>
                         <p className="section-subheading mx-auto">
                             From profile creation to job placement in 4 simple steps
@@ -290,7 +290,7 @@ export default function LandingPage() {
                                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center">
                                     <Sparkles className="w-4 h-4 text-white" />
                                 </div>
-                                <span className="font-bold font-display text-foreground">Career Setu AI</span>
+                                <span className="font-bold font-display text-foreground">Career Bridge AI</span>
                             </div>
                             <p className="text-sm text-muted-foreground">AI-powered career guidance for every Indian citizen. Skill India aligned.</p>
                         </div>
