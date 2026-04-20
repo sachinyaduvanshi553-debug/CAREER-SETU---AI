@@ -9,15 +9,19 @@ def run_backend():
     env = os.environ.copy()
     cwd = os.path.join(os.getcwd(), "backend")
     
-    # Use .venv python if available
-    venv_python = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe")
+    # Use venv python if available
+    venv_python = os.path.join(os.getcwd(), "backend", "venv", "Scripts", "python.exe")
     python_exe = venv_python if os.path.exists(venv_python) else sys.executable
     
     # Run uvicorn and log to backend.log
     with open("backend.log", "w") as f:
         try:
-            subprocess.run([python_exe, "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"], 
-                           cwd=cwd, env=env, stdout=f, stderr=f)
+            backend_cmd = [
+                python_exe, "-m", "uvicorn", "app.main:app",
+                "--host", "0.0.0.0", "--port", "8000",
+                "--reload", "--reload-dir", "app"
+            ]
+            subprocess.run(backend_cmd, cwd=cwd, env=env, stdout=f, stderr=f)
         except KeyboardInterrupt:
             pass
 

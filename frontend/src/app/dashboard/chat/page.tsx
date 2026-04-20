@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { api, getWsUrl } from "@/lib/api";
 import { Send, User, Search, MessageSquare, Clock } from "lucide-react";
-import { api } from "@/lib/api";
 
 export default function ChatPage() {
     const [messages, setMessages] = useState<any[]>([]);
@@ -17,7 +17,7 @@ export default function ChatPage() {
             setUser(profile);
             
             const token = localStorage.getItem("token");
-            const socket = new WebSocket(`ws://localhost:8000/api/chat/ws/${token}`);
+            const socket = new WebSocket(getWsUrl(`/chat/ws/${token}`));
             
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);

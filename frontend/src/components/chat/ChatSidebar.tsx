@@ -25,11 +25,11 @@ export default function ChatSidebar({ onSelectUser, selectedUser, currentUser }:
             setLoading(true);
             try {
                 if (view === "discover") {
-                    const allUsers = await api.getChatUsers();
-                    setUsers(allUsers);
+                    const allUsers = await api.getChatUsers(searchQuery);
+                    setUsers(Array.isArray(allUsers) ? allUsers : (allUsers?.users || []));
                 } else {
                     const convs = await api.getConversations();
-                    setConversations(convs);
+                    setConversations(Array.isArray(convs) ? convs : (convs?.conversations || []));
                 }
             } catch (err) {
                 console.error("Failed to fetch sidebar data", err);
@@ -38,7 +38,7 @@ export default function ChatSidebar({ onSelectUser, selectedUser, currentUser }:
             }
         };
         fetchData();
-    }, [view]);
+    }, [view, searchQuery]); // Added searchQuery to dependencies for real-time search
 
     const filteredList = (view === "chats" ? conversations : users).filter(u => 
         u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -106,14 +106,14 @@ export default function ChatSidebar({ onSelectUser, selectedUser, currentUser }:
                                         user.role === 'professional' ? 'bg-blue-500/20 text-blue-400' :
                                         'bg-purple-500/20 text-purple-400'
                                     }`}>
-                                        {user.full_name?.[0] || user.email?.[0]?.toUpperCase()}
+                                        {user.name?.[0] || user.email?.[0]?.toUpperCase()}
                                     </div>
                                     <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-dark-900 rounded-full"></div>
                                 </div>
                                 <div className="flex-grow text-left overflow-hidden">
                                     <div className="flex items-center justify-between gap-2 overflow-hidden">
                                         <span className="font-semibold truncate group-hover:text-primary-400 transition-colors">
-                                            {user.full_name || 'Anonymous User'}
+                                            {user.name || 'Anonymous User'}
                                         </span>
                                         {(user.is_verified || user.verification_status === 'verified') && (
                                             <ShieldCheck className="w-3.5 h-3.5 text-primary-400 flex-shrink-0" />
@@ -140,11 +140,11 @@ export default function ChatSidebar({ onSelectUser, selectedUser, currentUser }:
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 overflow-hidden">
                             <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center font-bold text-primary-400 flex-shrink-0">
-                                {currentUser.full_name?.[0] || currentUser.email?.[0].toUpperCase()}
+                                {currentUser.name?.[0] || currentUser.email?.[0].toUpperCase()}
                             </div>
                             <div className="overflow-hidden">
                                 <p className="text-sm font-semibold truncate leading-none mb-1 flex items-center gap-1.5">
-                                    {currentUser.full_name}
+                                    {currentUser.name}
                                     {(currentUser.is_verified || currentUser.verification_status === 'verified') && (
                                         <ShieldCheck className="w-3 h-3 text-primary-400" />
                                     )}

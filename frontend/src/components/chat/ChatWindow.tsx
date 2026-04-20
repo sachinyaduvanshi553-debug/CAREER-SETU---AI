@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { api } from "@/lib/api";
+import { api, getWsUrl } from "@/lib/api";
 import MessageBubble from "./MessageBubble";
-import { Send, Paperclip, Image as ImageIcon, Video, X, MoreVertical, Phone, Video as VideoCall, Search, Smile, MapPin, MessageSquare, ShieldCheck } from "lucide-react";
+import { Send, Paperclip, ImageIcon, Video, X, MoreVertical, Phone, VideoIcon, Search, Smile, MapPin, MessageSquare, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatWindowProps {
@@ -24,7 +24,7 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
         const loadHistory = async () => {
             try {
                 const history = await api.getChatHistory(user.email);
-                setMessages(history);
+                setMessages(Array.isArray(history) ? history : (history?.messages || []));
             } catch (err) {
                 console.error("Failed to load chat history", err);
             }
@@ -34,7 +34,7 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
 
         // Connect WebSocket
         const token = localStorage.getItem("token");
-        const wsUrl = `ws://localhost:8000/api/chat/ws/${token}`;
+        const wsUrl = getWsUrl(`/chat/ws/${token}`);
         ws.current = new WebSocket(wsUrl);
 
         ws.current.onmessage = (event) => {
@@ -163,14 +163,14 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center font-bold text-primary-400">
-                            {user.full_name?.[0] || user.email?.[0].toUpperCase()}
+                            {user.name?.[0] || user.email?.[0].toUpperCase()}
                         </div>
                         <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-dark-900 rounded-full"></div>
                     </div>
                     <div>
                         <div className="flex items-center gap-1.5">
                             <h3 className="text-sm font-bold text-white leading-none">
-                                {user.full_name || 'Anonymous User'}
+                                {user.name || 'Anonymous User'}
                             </h3>
                             {(user.is_verified || user.verification_status === 'verified') && (
                                 <ShieldCheck className="w-3.5 h-3.5 text-primary-400 flex-shrink-0" />
@@ -181,7 +181,7 @@ export default function ChatWindow({ user, currentUser }: ChatWindowProps) {
                 </div>
                 <div className="flex items-center gap-4 text-dark-400">
                     <button className="hover:text-white transition-colors"><Phone className="w-4 h-4" /></button>
-                    <button className="hover:text-white transition-colors"><VideoCall className="w-4 h-4" /></button>
+                    <button className="hover:text-white transition-colors"><Video className="w-4 h-4" /></button>
                     <button className="hover:text-white transition-colors"><MoreVertical className="w-4 h-4" /></button>
                 </div>
             </div>

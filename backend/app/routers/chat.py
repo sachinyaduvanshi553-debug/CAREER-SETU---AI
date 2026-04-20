@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, UploadFile, File, HTTPException, Query
 from typing import Dict, List, Optional
 from ..auth import decode_access_token, get_current_user_email
 from ..database import get_db
@@ -128,10 +128,22 @@ async def get_chat_history(receiver_email: str, token: str):
     return messages
 
 @router.get("/users")
-async def get_chat_users(current_email: str = Depends(get_current_user_email)):
-    """ Returns all users for discovery. """
+async def get_chat_users(
+    query: Optional[str] = Query(None),
+    current_email: str = Depends(get_current_user_email)
+):
+    """ Returns all users for discovery with optional search. """
     db = get_db()
-    users = await db["users"].find({"email": {"$ne": current_email}}).to_list(length=100)
+    filter_query = {"email": {"$ne": current_email}}
+    
+    if query:
+        filter_query["$or"] = [
+            {"name": {"$regex": query, "$options": "i"}},
+            {"email": {"$regex": query, "$options": "i"}},
+            {"role": {"$regex": query, "$options": "i"}}
+        ]
+        
+    users = await db["users"].find(filter_query).to_list(length=100)
     for u in users:
         u["_id"] = str(u["_id"])
         u.pop("password", None)
