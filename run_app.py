@@ -5,7 +5,7 @@ import threading
 import time
 
 def run_backend():
-    print("🚀 Starting Backend (FastAPI)...")
+    print("Starting Backend (FastAPI)...")
     env = os.environ.copy()
     cwd = os.path.join(os.getcwd(), "backend")
     
@@ -26,7 +26,7 @@ def run_backend():
             pass
 
 def run_frontend():
-    print("🌐 Starting Frontend (Next.js)...")
+    print("Starting Frontend (Next.js)...")
     cwd = os.path.join(os.getcwd(), "frontend")
     
     # Check if node_modules exists
@@ -42,7 +42,7 @@ def run_frontend():
             pass
 
 if __name__ == "__main__":
-    print("🌟 CAREER BRIDGE - AI - Starting Services 🌟")
+    print("CAREER BRIDGE - AI - Starting Services")
     
     # Ensure logs aren't deleted by mistake later
     open("backend.log", "a").close()
